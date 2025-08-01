@@ -1,0 +1,20 @@
+[package]
+name = "volans-swarm-derive"
+version = "0.1.0"
+rust-version.workspace = true
+edition.workspace = true
+description = "Volans swarm derive macros"
+authors = ["Cariers Kim <cariers.kim@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/cariers/volans"
+keywords = ["volans", "networking"]
+categories = ["network-programming", "asynchronous"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+heck = "0.5"
+proc-macro2 = "1.0.95"
+quote = "1.0"
+syn = { version = "2.0", default-features = false, features = ["clone-impls", "derive", "parsing", "printing", "proc-macro"] }

@@ -1,0 +1,22 @@
+[package]
+name = "volans-tcp"
+version = "0.1.0"
+rust-version.workspace = true
+edition.workspace = true
+description = "TCP transport for volans"
+authors = ["Cariers Kim <cariers.kim@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/cariers/volans"
+keywords = ["volans", "networking"]
+categories = ["network-programming", "asynchronous"]
+
+[dependencies]
+tokio = {workspace = true, features = ["net"]}
+volans-core.workspace = true
+futures.workspace = true
+socket2 = "0.5.10"
+tracing = { workspace = true }
+url = "2.5.4"
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["net", "rt", "macros"]}

@@ -1,0 +1,25 @@
+[package]
+name = "volans-swarm"
+version = "0.1.0"
+rust-version.workspace = true
+edition.workspace = true
+description = "Volans network client and server swarm"
+authors = ["Cariers Kim <cariers.kim@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/cariers/volans"
+keywords = ["volans", "networking"]
+categories = ["network-programming", "asynchronous"]
+
+
+[dependencies]
+volans-core.workspace = true
+futures.workspace = true
+futures-timer = "3.0.3"
+tracing.workspace = true
+thiserror.workspace = true
+volans-stream-select.workspace = true
+volans-swarm-derive.workspace = true
+either = "1.15.0"
+fnv = "1.0.7"
+tokio = { workspace = true, features = ["rt"]}
+smallvec = "1.15.1"

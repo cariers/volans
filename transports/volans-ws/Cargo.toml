@@ -1,0 +1,22 @@
+[package]
+name = "volans-ws"
+version = "0.1.0"
+rust-version.workspace = true
+edition.workspace = true
+description = "WebSocket transport for volans"
+authors = ["Cariers Kim <cariers.kim@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/cariers/volans"
+keywords = ["volans", "networking"]
+categories = ["network-programming", "asynchronous"]
+
+
+[dependencies]
+tokio = {workspace = true}
+volans-core.workspace = true
+futures.workspace = true
+async-tungstenite = "0.29.1"
+bytes.workspace = true
+tracing.workspace = true
+volans-tcp.workspace = true
+pin-project = "1.1.10"

@@ -1,0 +1,22 @@
+[package]
+name = "volans-core"
+version = "0.1.0"
+edition = "2024"
+description = "Core trait and struct for Volans networking framework"
+authors = ["Cariers Kim <cariers.kim@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/cariers/volans"
+keywords = ["volans", "networking"]
+categories = ["network-programming", "asynchronous"]
+
+[dependencies]
+either = "1.15.0"
+pin-project = "1.1.10"
+url = "2.5.4"
+futures.workspace = true
+thiserror.workspace = true
+bytes.workspace = true
+volans-stream-select.workspace = true
+tracing.workspace = true
+bs58 = "0.5.1"
+futures-timer = "3.0.3"

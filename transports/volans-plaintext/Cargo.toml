@@ -1,0 +1,20 @@
+[package]
+name = "volans-plaintext"
+version = "0.1.0"
+rust-version.workspace = true
+edition.workspace = true
+description = "Plaintext transport for volans"
+authors = ["Cariers Kim <cariers.kim@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/cariers/volans"
+keywords = ["volans", "networking"]
+categories = ["network-programming", "asynchronous"]
+
+
+[dependencies]
+ed25519-dalek = "2.1.1"
+volans-core.workspace = true
+futures.workspace = true
+bytes.workspace = true
+thiserror.workspace = true
+tracing.workspace = true

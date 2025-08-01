@@ -1,0 +1,20 @@
+[package]
+name = "volans-stream-select"
+version = "0.1.0"
+rust-version.workspace = true
+edition.workspace = true
+description = "Stream selection for volans"
+authors = ["Cariers Kim <cariers.kim@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/cariers/volans"
+keywords = ["volans", "networking"]
+categories = ["network-programming", "asynchronous"]
+
+
+[dependencies]
+futures.workspace = true
+bytes.workspace = true
+pin-project = "1.1.10"
+thiserror.workspace = true
+smallvec = "1.15.1"
+tracing.workspace = true

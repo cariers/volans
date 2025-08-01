@@ -1,0 +1,22 @@
+[package]
+name = "volans-ping"
+version = "0.1.0"
+rust-version.workspace = true
+edition.workspace = true
+description = "Ping protocol for volans"
+authors = ["Cariers Kim <cariers.kim@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/cariers/volans"
+keywords = ["volans", "networking"]
+categories = ["network-programming", "asynchronous"]
+
+
+[dependencies]
+volans-swarm.workspace = true
+volans-core.workspace = true
+futures.workspace = true
+rand = "0.9.2"
+thiserror.workspace = true
+futures-timer = "3.0.3"
+tracing.workspace = true
+either = "1.15.0"
