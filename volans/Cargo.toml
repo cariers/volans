@@ -1,6 +1,6 @@
 [package]
 name = "volans"
-version = "0.1.0"
+version = "0.1.1"
 rust-version.workspace = true
 edition.workspace = true
 description = "Volans networking framework"
@@ -12,27 +12,34 @@ categories = ["network-programming", "asynchronous"]
 
 [features]
 full = [
-    "tcp",
-    "muxing",
     "ws",
+    "tcp",
+    "plaintext",
+    "muxing",
+    "yamux",
     "swarm",
     "ping",
-    "plaintext",
+    "request"
 ]
 
-tcp = ["dep:volans-tcp"]
-muxing = ["dep:volans-muxing"]
-ws = ["dep:volans-ws"]
 swarm = ["dep:volans-swarm"]
-ping = ["dep:volans-ping"]
+
+# transports
 plaintext = ["dep:volans-plaintext"]
+tcp = ["dep:volans-tcp"]
+ws = ["dep:volans-ws"]
+
+# multiplexing
+muxing = ["dep:volans-muxing"]
+yamux = ["dep:volans-yamux"]
+
+# protocols
+ping = ["dep:volans-ping"]
+request = ["dep:volans-request"]
 
 [dependencies]
 volans-core.workspace = true
 volans-swarm = { workspace = true, optional = true }
-
-# protocols
-volans-ping = { workspace = true, optional = true }
 
 # transports
 volans-tcp = { workspace = true, optional = true }
@@ -41,3 +48,9 @@ volans-plaintext = { workspace = true, optional = true }
 
 # multiplexing
 volans-muxing = { workspace = true, optional = true }
+volans-yamux = { workspace = true, optional = true }
+
+# protocols
+volans-ping = { workspace = true, optional = true }
+volans-request = { workspace = true, optional = true }
+

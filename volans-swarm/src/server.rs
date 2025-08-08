@@ -21,7 +21,7 @@ use crate::{
     },
     connection::{Pool, PoolConfig, PoolEvent},
     error::{ConnectionError, ListenError},
-    listener, notify_all, notify_any, notify_one,
+    listener, notify_any, notify_one,
 };
 
 pub struct Swarm<TBehavior>
@@ -170,13 +170,6 @@ where
                             .iter_established_connections_of_peer(&peer_id)
                             .collect();
                         PendingNotifyHandler::Any(ids)
-                    }
-                    NotifyHandler::All => {
-                        let ids = self
-                            .pool
-                            .iter_established_connections_of_peer(&peer_id)
-                            .collect();
-                        PendingNotifyHandler::All(ids)
                     }
                 };
                 self.pending_handler_action = Some((peer_id, handler, action));
@@ -484,16 +477,6 @@ where
                                 // 写回Pending的连接ID和操作
                                 this.pending_handler_action =
                                     Some((peer_id, PendingNotifyHandler::Any(pending), action));
-                            }
-                            None => continue,
-                        }
-                    }
-                    PendingNotifyHandler::All(ids) => {
-                        match notify_all::<TBehavior>(ids, &mut this.pool, action, cx) {
-                            Some((pending, action)) => {
-                                // 写回Pending的连接ID和操作
-                                this.pending_handler_action =
-                                    Some((peer_id, PendingNotifyHandler::All(pending), action));
                             }
                             None => continue,
                         }

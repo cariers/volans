@@ -41,7 +41,6 @@ use crate::connection::{EstablishedConnection, Pool};
 enum PendingNotifyHandler {
     One(ConnectionId),
     Any(SmallVec<[ConnectionId; 10]>),
-    All(SmallVec<[ConnectionId; 10]>),
 }
 
 // 通知单个连接
@@ -94,38 +93,4 @@ where
             None
         }
     })
-}
-
-// 通知所有连接
-fn notify_all<TBehavior>(
-    ids: SmallVec<[ConnectionId; 10]>,
-    pool: &mut Pool<TBehavior::ConnectionHandler>,
-    action: THandlerAction<TBehavior>,
-    cx: &mut Context<'_>,
-) -> Option<(SmallVec<[ConnectionId; 10]>, THandlerAction<TBehavior>)>
-where
-    TBehavior: NetworkBehavior,
-{
-    let mut pending = SmallVec::new();
-    for id in ids {
-        if let Some(connection) = pool.get_established(id) {
-            match connection.poll_ready(cx) {
-                Poll::Pending => {
-                    pending.push(id);
-                }
-                Poll::Ready(Err(())) => {}
-                Poll::Ready(Ok(())) => {
-                    connection
-                        .start_send(action.clone())
-                        .expect("Failed to send event");
-                    continue;
-                }
-            }
-        }
-    }
-    if !pending.is_empty() {
-        Some((pending, action))
-    } else {
-        None
-    }
 }

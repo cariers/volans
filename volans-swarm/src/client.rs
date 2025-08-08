@@ -13,7 +13,7 @@ use crate::{
     behavior::{CloseConnection, NotifyHandler},
     connection::{Pool, PoolConfig, PoolEvent},
     error::{ConnectionError, DialError},
-    notify_all, notify_any, notify_one,
+    notify_any, notify_one,
 };
 
 pub struct Swarm<TBehavior>
@@ -91,7 +91,7 @@ where
     }
 
     /// 创建一个新的 Swarm 实例
-    pub fn dial(&mut self, opts: DialOpts) -> Result<(), DialError> {
+    pub fn dial(&mut self, opts: DialOpts) -> Result<Url, DialError> {
         let peer_id = opts.peer_id();
         let condition = opts.condition();
         let connection_id = opts.connection_id();
@@ -112,11 +112,31 @@ where
         if !should_dial {
             let err = DialError::PeerCondition(condition);
             self.behavior
-                .on_dial_failure(connection_id, peer_id, Some(&addr), &err);
+                .on_dial_failure(connection_id, peer_id, addr.as_ref(), &err);
             return Err(err);
         }
+
+        let addr = match self
+            .behavior
+            .handle_pending_connection(connection_id, peer_id, &addr)
+        {
+            Ok(Some(addr)) => addr,
+            Ok(None) => {
+                let err = DialError::NoAddress;
+                self.behavior
+                    .on_dial_failure(connection_id, peer_id, addr.as_ref(), &err);
+                return Err(err);
+            }
+            Err(cause) => {
+                let error = DialError::Denied { cause };
+                self.behavior
+                    .on_dial_failure(connection_id, peer_id, addr.as_ref(), &error);
+                return Err(error);
+            }
+        };
+
         // 1.开始执行Transport 连接，
-        let future = match self.transport.dial(&opts.addr()) {
+        let future = match self.transport.dial(&addr) {
             Ok(dial) => dial,
             Err(error) => {
                 let err = DialError::Transport {
@@ -129,8 +149,9 @@ where
             }
         };
         // 2.加入Connection Pool
-        self.pool.add_outgoing(connection_id, future, addr, peer_id);
-        Ok(())
+        self.pool
+            .add_outgoing(connection_id, future, addr.clone(), peer_id);
+        Ok(addr)
     }
 
     fn handle_behavior_event(
@@ -159,13 +180,6 @@ where
                             .iter_established_connections_of_peer(&peer_id)
                             .collect();
                         PendingNotifyHandler::Any(ids)
-                    }
-                    NotifyHandler::All => {
-                        let ids = self
-                            .pool
-                            .iter_established_connections_of_peer(&peer_id)
-                            .collect();
-                        PendingNotifyHandler::All(ids)
                     }
                 };
                 self.pending_handler_action = Some((peer_id, handler, action));
@@ -336,16 +350,6 @@ where
                             None => continue,
                         }
                     }
-                    PendingNotifyHandler::All(ids) => {
-                        match notify_all::<TBehavior>(ids, &mut this.pool, action, cx) {
-                            Some((pending, action)) => {
-                                // 写回Pending的连接ID和操作
-                                this.pending_handler_action =
-                                    Some((peer_id, PendingNotifyHandler::All(pending), action));
-                            }
-                            None => continue,
-                        }
-                    }
                 },
                 // 如果没有Pending的Handler操作，继续处理Swarm事件
                 None => match this.behavior.poll(cx) {
@@ -362,9 +366,7 @@ where
                 Poll::Ready(opts) => {
                     let peer_id = opts.peer_id();
                     let connection_id = opts.connection_id();
-                    let addr = opts.addr();
-
-                    if let Ok(()) = this.dial(opts) {
+                    if let Ok(addr) = this.dial(opts) {
                         this.pending_swarm_events.push_back(SwarmEvent::Dialing {
                             peer_id,
                             connection_id,

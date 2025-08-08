@@ -244,7 +244,6 @@ impl<TEvent, THandlerAction> BehaviorEvent<TEvent, THandlerAction> {
 pub enum NotifyHandler {
     One(ConnectionId),
     Any,
-    All,
 }
 
 #[derive(Debug, Clone, Default)]

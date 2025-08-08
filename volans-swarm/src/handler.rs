@@ -21,7 +21,7 @@ use ::either::Either;
 use crate::{InboundUpgradeSend, OutboundUpgradeSend};
 
 pub trait ConnectionHandler: Send + 'static {
-    type Action: fmt::Debug + Send + Clone + 'static;
+    type Action: fmt::Debug + Send + 'static;
     type Event: fmt::Debug + Send + 'static;
 
     fn handle_action(&mut self, action: Self::Action);

@@ -8,12 +8,12 @@ use crate::ConnectionId;
 pub struct DialOpts {
     peer_id: Option<PeerId>,
     condition: PeerCondition,
-    addr: Url,
+    addr: Option<Url>,
     connection_id: ConnectionId,
 }
 
 impl DialOpts {
-    pub fn new(addr: Url, peer_id: Option<PeerId>) -> Self {
+    pub fn new(addr: Option<Url>, peer_id: Option<PeerId>) -> Self {
         Self {
             peer_id,
             condition: PeerCondition::default(),
@@ -39,7 +39,7 @@ impl DialOpts {
         self.connection_id
     }
 
-    pub fn addr(&self) -> Url {
+    pub fn addr(&self) -> Option<Url> {
         self.addr.clone()
     }
 }

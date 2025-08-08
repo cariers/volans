@@ -15,10 +15,16 @@ pub use volans_ws as ws;
 #[cfg(feature = "plaintext")]
 pub use volans_plaintext as plaintext;
 
+// multiplexing
+#[cfg(feature = "muxing")]
+pub use volans_muxing as muxing;
+
+#[cfg(feature = "yamux")]
+pub use volans_yamux as yamux;
+
 // protocols
 #[cfg(feature = "ping")]
 pub use volans_ping as ping;
 
-// multiplexing
-#[cfg(feature = "muxing")]
-pub use volans_muxing as muxing;
+#[cfg(feature = "request")]
+pub use volans_request as request;

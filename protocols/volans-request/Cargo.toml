@@ -1,0 +1,24 @@
+[package]
+name = "volans-request"
+version = "0.1.0"
+rust-version.workspace = true
+edition.workspace = true
+
+[features]
+default = ["json", "protobuf"]
+json = ["dep:serde", "dep:serde_json"]
+protobuf = ["dep:prost"]
+
+[dependencies]
+async-trait = "0.1.88"
+serde = {version = "1.0", features = ["derive"], optional = true}
+serde_json = { version = "1.0", optional = true }
+prost = { version = "0.14", optional = true }
+futures = { workspace = true }
+bytes.workspace = true
+volans-swarm.workspace = true
+volans-core.workspace = true
+smallvec = "1.15.1"
+futures-bounded = { version = "0.3.0", features = ["futures-timer"] }
+tracing.workspace = true
+thiserror.workspace = true

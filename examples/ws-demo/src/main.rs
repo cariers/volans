@@ -112,7 +112,7 @@ async fn start_client() -> anyhow::Result<()> {
         swarm::connection::PoolConfig::new(Box::new(TokioExecutor)),
     );
 
-    let _ = swarm.dial(swarm::DialOpts::new(addr, None)).unwrap();
+    let _ = swarm.dial(swarm::DialOpts::new(Some(addr), None)).unwrap();
 
     while let Some(event) = swarm.next().await {
         tracing::info!("Client Swarm event: {:?}", event);

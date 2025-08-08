@@ -22,7 +22,7 @@ members = [
 
     # examples
     "examples/ws-demo"
-]
+, "protocols/volans-request"]
 resolver = "3"
 
 [workspace.package]
@@ -40,7 +40,7 @@ tokio = { version = "1.47", default-features = false}
 # core
 volans-stream-select = { path = "volans-stream-select", version = "0.1.0"}
 volans-core = { path = "volans-core" , version = "0.1.0"}
-volans-swarm = { path = "volans-swarm", version = "0.1.0"}
+volans-swarm = { path = "volans-swarm", version = "0.1.1"}
 volans-swarm-derive = { path = "volans-swarm-derive", version = "0.1.0"}
 
 # transports
@@ -50,10 +50,11 @@ volans-plaintext = { path = "transports/volans-plaintext", version = "0.1.0"}
 
 # protocols
 volans-ping = { path = "protocols/volans-ping", version = "0.1.0"}
+volans-request = { path = "protocols/volans-request", version = "0.1.0"}
 
 # muxers
 volans-muxing = { path = "muxers/volans-muxing", version = "0.1.0"}
 volans-yamux = { path = "muxers/volans-yamux", version = "0.1.0"}
 
 # all
-volans = { path = "volans", version = "0.1.0"}
+volans = { path = "volans", version = "0.1.1"}
