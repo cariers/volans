@@ -7,6 +7,7 @@ use futures::{
 pub use handler::Handler;
 
 use parking_lot::{Mutex, MutexGuard};
+use volans_codec::asynchronous_codec::{Decoder, Encoder};
 
 use std::{
     collections::{HashMap, HashSet, hash_map::Entry},
@@ -24,7 +25,7 @@ use volans_swarm::{
     error::{ConnectionError, DialError},
 };
 
-use crate::OutboundStreamUpgradeFactory;
+use crate::{OutboundStreamUpgradeFactory, upgrade::WithCodecFactory};
 pub struct Behavior<TFactory>
 where
     TFactory: OutboundStreamUpgradeFactory,
@@ -44,6 +45,14 @@ where
             shared,
             dial_receiver,
         }
+    }
+
+    pub fn new_with_framed<TCodec>(codec: TCodec) -> Behavior<WithCodecFactory<TCodec>>
+    where
+        TCodec: Decoder + Encoder + Clone + Send + 'static,
+    {
+        let factory = WithCodecFactory::new(codec);
+        Behavior::<WithCodecFactory<TCodec>>::new(factory)
     }
 
     pub fn controller(&self) -> Controller<TFactory> {

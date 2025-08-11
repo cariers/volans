@@ -1,3 +1,7 @@
+mod codec;
+
+pub use codec::{FramedUpgrade, WithCodecFactory};
+
 use std::{
     convert::Infallible,
     fmt,
@@ -25,7 +29,7 @@ impl UpgradeInfo for ReadyUpgrade {
 
 impl InboundUpgrade<Substream> for ReadyUpgrade {
     type Output = (Substream, StreamProtocol);
-    type Error = (Infallible, StreamProtocol);
+    type Error = Infallible;
 
     type Future = Ready<Result<Self::Output, Self::Error>>;
 
@@ -51,7 +55,7 @@ pub trait InboundStreamUpgradeFactory: Send + 'static {
     type Upgrade: InboundUpgradeSend<
             Info = StreamProtocol,
             Output = (Self::Output, StreamProtocol),
-            Error = (Self::Error, StreamProtocol),
+            Error = Self::Error,
         >;
     fn listen_protocol(
         &self,

@@ -75,9 +75,9 @@ where
     fn on_upgrade_error(
         &mut self,
         _user_data: Self::InboundUserData,
-        (error, protocol): <Self::InboundUpgrade as InboundUpgradeSend>::Error,
+        error: <Self::InboundUpgrade as InboundUpgradeSend>::Error,
     ) {
         self.pending_events
-            .push_back(StreamEvent::UpgradeError { error, protocol });
+            .push_back(StreamEvent::UpgradeError { error });
     }
 }

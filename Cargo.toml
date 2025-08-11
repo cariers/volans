@@ -62,8 +62,8 @@ volans-yamux = { path = "muxers/volans-yamux", version = "0.1.0"}
 # protocols
 volans-ping = { path = "protocols/volans-ping", version = "0.1.0"}
 volans-request = { path = "protocols/volans-request", version = "0.1.1"}
-volans-stream = { path = "protocols/volans-stream", version = "0.1.0"}
+volans-stream = { path = "protocols/volans-stream", version = "0.1.1-beta"}
 
 
 # all
-volans = { path = "volans", version = "0.1.1"}
+volans = { path = "volans", version = "0.1.3-beta"}

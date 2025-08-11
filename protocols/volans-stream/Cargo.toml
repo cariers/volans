@@ -1,6 +1,6 @@
 [package]
 name = "volans-stream"
-version = "0.1.0"
+version = "0.1.1-beta"
 rust-version.workspace = true
 edition.workspace = true
 description = "Stream protocol for volans"
@@ -16,6 +16,7 @@ parking_lot = "0.12.4"
 futures = { workspace = true }
 volans-swarm.workspace = true
 volans-core.workspace = true
+volans-codec.workspace = true
 tracing.workspace = true
 thiserror.workspace = true
 smallvec = "1.15.1"

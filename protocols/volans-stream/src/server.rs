@@ -1,8 +1,7 @@
 mod handle;
 
-use futures::{Stream, StreamExt, channel::mpsc};
 pub use handle::Handler;
-use parking_lot::{Mutex, MutexGuard};
+use volans_codec::asynchronous_codec::{Decoder, Encoder};
 
 use std::{
     collections::{HashMap, hash_map::Entry},
@@ -12,6 +11,8 @@ use std::{
     task::{Context, Poll},
 };
 
+use futures::{Stream, StreamExt, channel::mpsc};
+use parking_lot::{Mutex, MutexGuard};
 use volans_core::{PeerId, Url};
 use volans_swarm::{
     BehaviorEvent, ConnectionDenied, ConnectionId, ListenerEvent, NetworkBehavior,
@@ -19,7 +20,7 @@ use volans_swarm::{
     error::{ConnectionError, ListenError},
 };
 
-use crate::{ConnectionStreamEvent, InboundStreamUpgradeFactory, StreamEvent};
+use crate::{InboundStreamUpgradeFactory, StreamEvent, upgrade::WithCodecFactory};
 
 pub struct Behavior<TFactory>
 where
@@ -35,6 +36,14 @@ where
     pub fn new(factory: TFactory) -> Self {
         let shared = Arc::new(Mutex::new(Shared::new(factory)));
         Self { shared }
+    }
+
+    pub fn new_with_framed<TCodec>(codec: TCodec) -> Behavior<WithCodecFactory<TCodec>>
+    where
+        TCodec: Decoder + Encoder + Clone + Send + 'static,
+    {
+        let factory = WithCodecFactory::new(codec);
+        Behavior::<WithCodecFactory<TCodec>>::new(factory)
     }
 
     pub fn acceptor(&self) -> Acceptor<TFactory> {
@@ -123,10 +132,8 @@ where
     TFactory: InboundStreamUpgradeFactory,
 {
     upgrade_factory: TFactory,
-    supported_protocols: HashMap<
-        StreamProtocol,
-        mpsc::Sender<ConnectionStreamEvent<TFactory::Output, TFactory::Error>>,
-    >,
+    supported_protocols:
+        HashMap<StreamProtocol, mpsc::Sender<(PeerId, ConnectionId, TFactory::Output)>>,
 }
 
 impl<TFactory> Shared<TFactory>
@@ -171,40 +178,31 @@ where
         connection_id: ConnectionId,
         event: StreamEvent<TFactory::Output, TFactory::Error>,
     ) {
-        let protocol = event.protocol();
-
-        let event = match event {
+        match event {
             StreamEvent::FullyNegotiated { output, protocol } => {
-                ConnectionStreamEvent::FullyNegotiated {
-                    peer_id,
-                    connection_id,
-                    protocol,
-                    output,
+                match self.supported_protocols.entry(protocol.clone()) {
+                    Entry::Occupied(mut entry) => {
+                        match entry.get_mut().try_send((peer_id, connection_id, output)) {
+                            Ok(()) => {}
+                            Err(e) if e.is_full() => {
+                                tracing::debug!(%protocol, "Channel is full, dropping inbound stream");
+                            }
+                            Err(e) if e.is_disconnected() => {
+                                tracing::debug!(%protocol, "Channel is gone, dropping inbound stream");
+                                entry.remove();
+                            }
+                            _ => unreachable!(),
+                        }
+                    }
+                    Entry::Vacant(_) => {
+                        tracing::debug!(%protocol, "channel is gone, dropping inbound stream");
+                    }
                 }
             }
-            StreamEvent::UpgradeError { error, protocol } => ConnectionStreamEvent::UpgradeError {
-                peer_id,
-                connection_id,
-                protocol,
-                error,
-            },
+            StreamEvent::UpgradeError { error } => {
+                tracing::debug!(%peer_id, %connection_id, "Upgrade error: {:?}", error);
+            }
         };
-        match self.supported_protocols.entry(protocol.clone()) {
-            Entry::Occupied(mut entry) => match entry.get_mut().try_send(event) {
-                Ok(()) => {}
-                Err(e) if e.is_full() => {
-                    tracing::debug!(%protocol, "Channel is full, dropping inbound stream");
-                }
-                Err(e) if e.is_disconnected() => {
-                    tracing::debug!(%protocol, "Channel is gone, dropping inbound stream");
-                    entry.remove();
-                }
-                _ => unreachable!(),
-            },
-            Entry::Vacant(_) => {
-                tracing::debug!(%protocol, "channel is gone, dropping inbound stream");
-            }
-        }
     }
 }
 
@@ -217,16 +215,14 @@ pub struct IncomingStreams<TFactory>
 where
     TFactory: InboundStreamUpgradeFactory,
 {
-    receiver: mpsc::Receiver<ConnectionStreamEvent<TFactory::Output, TFactory::Error>>,
+    receiver: mpsc::Receiver<(PeerId, ConnectionId, TFactory::Output)>,
 }
 
 impl<TFactory> IncomingStreams<TFactory>
 where
     TFactory: InboundStreamUpgradeFactory,
 {
-    pub(crate) fn new(
-        receiver: mpsc::Receiver<ConnectionStreamEvent<TFactory::Output, TFactory::Error>>,
-    ) -> Self {
+    pub(crate) fn new(receiver: mpsc::Receiver<(PeerId, ConnectionId, TFactory::Output)>) -> Self {
         Self { receiver }
     }
 }
@@ -235,7 +231,7 @@ impl<TFactory> Stream for IncomingStreams<TFactory>
 where
     TFactory: InboundStreamUpgradeFactory,
 {
-    type Item = ConnectionStreamEvent<TFactory::Output, TFactory::Error>;
+    type Item = (PeerId, ConnectionId, TFactory::Output);
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         self.receiver.poll_next_unpin(cx)
