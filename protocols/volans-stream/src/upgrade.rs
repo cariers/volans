@@ -1,6 +1,6 @@
 mod codec;
 
-pub use codec::{FramedUpgrade, WithCodecFactory};
+pub use codec::WithCodecFactory;
 
 use std::{
     convert::Infallible,
