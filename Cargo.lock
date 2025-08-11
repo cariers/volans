@@ -60,6 +60,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "asynchronous-codec"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a860072022177f903e59730004fb5dc13db9275b79bb2aef7ba8ce831956c233"
+dependencies = [
+ "bytes",
+ "futures-sink",
+ "futures-util",
+ "memchr",
+ "pin-project-lite",
+]
+
+[[package]]
 name = "atomic-waker"
 version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1305,6 +1318,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5a5f39404a5da50712a4c1eecf25e90dd62b613502b7e925fd4e4d19b5c96512"
 
 [[package]]
+name = "unsigned-varint"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eb066959b24b5196ae73cb057f45598450d2c5f71460e98c49b738086eff9c06"
+dependencies = [
+ "asynchronous-codec",
+ "bytes",
+ "futures-io",
+ "futures-util",
+]
+
+[[package]]
 name = "url"
 version = "2.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1341,8 +1366,9 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
 name = "volans"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
+ "volans-codec",
  "volans-core",
  "volans-muxing",
  "volans-ping",
@@ -1352,6 +1378,17 @@ dependencies = [
  "volans-tcp",
  "volans-ws",
  "volans-yamux",
+]
+
+[[package]]
+name = "volans-codec"
+version = "0.1.0"
+dependencies = [
+ "asynchronous-codec",
+ "prost",
+ "serde",
+ "serde_json",
+ "unsigned-varint",
 ]
 
 [[package]]

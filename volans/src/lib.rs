@@ -5,6 +5,9 @@ pub use core::Transport;
 #[cfg(feature = "swarm")]
 pub use volans_swarm as swarm;
 
+#[cfg(feature = "codec")]
+pub use volans_codec as codec;
+
 // transports
 #[cfg(feature = "tcp")]
 pub use volans_tcp as tcp;
