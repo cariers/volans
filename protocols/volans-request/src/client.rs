@@ -112,11 +112,6 @@ pub enum Event<TResponse> {
         request_id: RequestId,
         cause: OutboundFailure,
     },
-    ResponseSent {
-        peer_id: PeerId,
-        connection_id: ConnectionId,
-        request_id: RequestId,
-    },
 }
 
 impl<TCodec> NetworkBehavior for Behavior<TCodec>
