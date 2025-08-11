@@ -1,8 +1,15 @@
 [package]
-name = "volans-server-stream"
+name = "volans-stream"
 version = "0.1.0"
 rust-version.workspace = true
 edition.workspace = true
+description = "Stream protocol for volans"
+authors = ["Cariers Kim <cariers.kim@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/cariers/volans"
+keywords = ["volans", "networking"]
+categories = ["network-programming", "asynchronous"]
+
 
 [dependencies]
 parking_lot = "0.12.4"

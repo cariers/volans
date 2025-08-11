@@ -1,6 +1,6 @@
 [package]
 name = "volans"
-version = "0.1.2"
+version = "0.1.3"
 rust-version.workspace = true
 edition.workspace = true
 description = "Volans networking framework"
@@ -21,6 +21,7 @@ full = [
     "swarm",
     "ping",
     "request",
+    "stream",
 ]
 
 swarm = ["dep:volans-swarm"]
@@ -38,6 +39,7 @@ yamux = ["dep:volans-yamux"]
 # protocols
 ping = ["dep:volans-ping"]
 request = ["dep:volans-request"]
+stream = ["dep:volans-stream"]
 
 [dependencies]
 volans-core.workspace = true
@@ -56,3 +58,4 @@ volans-yamux = { workspace = true, optional = true }
 # protocols
 volans-ping = { workspace = true, optional = true }
 volans-request = { workspace = true, optional = true }
+volans-stream = { workspace = true, optional = true }
