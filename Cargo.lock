@@ -1462,6 +1462,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "volans-server-stream"
+version = "0.1.0"
+dependencies = [
+ "futures",
+ "parking_lot",
+ "smallvec",
+ "thiserror",
+ "tracing",
+ "volans-core",
+ "volans-swarm",
+]
+
+[[package]]
 name = "volans-stream-select"
 version = "0.1.0"
 dependencies = [
