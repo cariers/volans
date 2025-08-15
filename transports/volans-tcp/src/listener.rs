@@ -1,17 +1,17 @@
-use volans_core::{Listener, ListenerEvent};
 use futures::future::{self, Ready};
 use std::{
     io, mem,
+    net::{IpAddr, SocketAddr},
     pin::Pin,
     task::{Context, Poll},
 };
 use tokio::net::TcpListener;
-use url::Url;
+use volans_core::{Listener, ListenerEvent, Multiaddr, multiaddr::Protocol};
 
 use crate::TcpStream;
 
 pub struct ListenStream {
-    listener_addr: Url,
+    listen_addr: SocketAddr,
     pending_event: Option<ListenerEvent<Ready<Result<TcpStream, io::Error>>, io::Error>>,
     state: State,
 }
@@ -22,10 +22,11 @@ enum State {
 }
 
 impl ListenStream {
-    pub fn new(listener: TcpListener, listener_addr: Url) -> Self {
-        let listened_event = ListenerEvent::Listened(listener_addr.clone());
+    pub fn new(listener: TcpListener, listen_addr: SocketAddr) -> Self {
+        let addr = ip_to_multiaddr(listen_addr.ip(), listen_addr.port());
+        let listened_event = ListenerEvent::Listened(addr);
         ListenStream {
-            listener_addr,
+            listen_addr,
             state: State::Listening { listener },
             pending_event: Some(listened_event),
         }
@@ -63,17 +64,13 @@ impl Listener for ListenStream {
             State::Listening { listener } => match Pin::new(listener).poll_accept(cx) {
                 Poll::Ready(Ok((stream, remote_addr))) => {
                     let upgrade = future::ok(TcpStream::from(stream));
-                    // TODO Change URL to Custom
-                    let remote_addr = Url::parse(&format!(
-                        "{}://{}:{}",
-                        this.listener_addr.scheme(),
-                        remote_addr.ip(),
-                        remote_addr.port()
-                    ))
-                    .map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e))
-                    .unwrap();
+
+                    let local_addr =
+                        ip_to_multiaddr(this.listen_addr.ip(), this.listen_addr.port());
+                    let remote_addr = ip_to_multiaddr(remote_addr.ip(), remote_addr.port());
+
                     let event = ListenerEvent::Incoming {
-                        local_addr: this.listener_addr.clone(),
+                        local_addr,
                         remote_addr,
                         upgrade,
                     };
@@ -90,30 +87,6 @@ impl Listener for ListenStream {
     }
 }
 
-// impl Stream for ListenStream {
-//     type Item = ListenerEvent<Ready<Result<TcpStream, io::Error>>, io::Error>;
-
-//     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-//         if let Some(event) = self.pending_event.take() {
-//             return Poll::Ready(Some(event));
-//         }
-//         tracing::trace!(
-//             "ListenStream::poll_next: Polling for new connections on {}",
-//             self.listener_addr
-//         );
-//         match Pin::new(&mut self.listener).poll_accept(cx) {
-//             Poll::Ready(Ok((stream, remote_addr))) => {
-//                 return Poll::Ready(Some(ListenerEvent::Incoming {
-//                     local_addr: self.listener_addr,
-//                     remote_addr,
-//                     upgrade: future::ok(stream.into()),
-//                 }));
-//             }
-//             Poll::Ready(Err(e)) => {
-//                 return Poll::Ready(Some(ListenerEvent::Error(e)));
-//             }
-//             Poll::Pending => {}
-//         }
-//         Poll::Pending
-//     }
-// }
+fn ip_to_multiaddr(ip: IpAddr, port: u16) -> Multiaddr {
+    Multiaddr::empty().with(ip.into()).with(Protocol::Tcp(port))
+}
