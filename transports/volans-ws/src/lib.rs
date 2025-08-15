@@ -11,7 +11,9 @@ use async_tungstenite::{
 };
 use futures::{FutureExt, TryFutureExt};
 use stream::RwStreamSink;
-use volans_core::{Listener, ListenerEvent, Transport, TransportError, Url};
+use volans_core::{
+    Listener, ListenerEvent, Multiaddr, Transport, TransportError, multiaddr::Protocol,
+};
 use volans_tcp::TcpStream;
 
 use crate::framed::BytesWebSocketStream;
@@ -87,19 +89,21 @@ impl Transport for Config {
     type Incoming = ListenerUpgrade;
     type Listener = ListenStream;
 
-    fn dial(&self, addr: &Url) -> Result<Self::Dial, TransportError<Self::Error>> {
+    fn dial(&self, addr: Multiaddr) -> Result<Self::Dial, TransportError<Self::Error>> {
         let config = self.websocket.clone();
         tracing::debug!("Connecting to WebSocket at {}", addr);
+        let (inner_addr, path) =
+            parse_ws_addr(&addr).ok_or_else(|| TransportError::NotSupported(addr.clone()))?;
+
+        let path = path.unwrap_or("".to_string());
+        let request = path.parse::<Uri>().map_err(tungstenite::Error::from)?;
+        tracing::debug!("Connecting to WebSocket at {}", request);
+
         let dialer = self
             .tcp
-            .dial(addr)
+            .dial(inner_addr)
             .map_err(|e| e.map(tungstenite::Error::from))?;
 
-        let request = addr
-            .to_string()
-            .parse::<Uri>()
-            .map_err(tungstenite::Error::from)?;
-        tracing::debug!("Connecting to WebSocket at {}", request);
         Ok(dialer
             .map_err(tungstenite::Error::from)
             .and_then(move |stream| client_async_with_config(request, stream, Some(config)))
@@ -111,13 +115,16 @@ impl Transport for Config {
             .boxed())
     }
 
-    fn listen(&self, addr: &Url) -> Result<Self::Listener, TransportError<Self::Error>> {
+    fn listen(&self, addr: Multiaddr) -> Result<Self::Listener, TransportError<Self::Error>> {
+        let (inner_addr, path) =
+            parse_ws_addr(&addr).ok_or_else(|| TransportError::NotSupported(addr.clone()))?;
         let listener = self
             .tcp
-            .listen(addr)
+            .listen(inner_addr)
             .map_err(|e| e.map(tungstenite::Error::from))?;
         tracing::debug!("Listening for WebSocket connections on {}", addr);
         Ok(ListenStream {
+            path: path.map(|r| r.to_string()),
             config: self.websocket.clone(),
             inner: listener,
         })
@@ -126,6 +133,7 @@ impl Transport for Config {
 
 #[pin_project::pin_project]
 pub struct ListenStream {
+    path: Option<String>,
     config: WebSocketConfig,
     #[pin]
     inner: volans_tcp::ListenStream,
@@ -162,5 +170,18 @@ impl Listener for ListenStream {
             }
             Poll::Pending => Poll::Pending,
         }
+    }
+}
+
+fn parse_ws_addr(addr: &Multiaddr) -> Option<(Multiaddr, Option<String>)> {
+    let mut inner_addr = addr.clone();
+    let maybe_path = inner_addr.pop()?;
+    match maybe_path {
+        Protocol::Path(path) => match inner_addr.pop()? {
+            Protocol::Ws => Some((inner_addr, Some(path.to_string()))),
+            _ => None,
+        },
+        Protocol::Ws => Some((inner_addr, None)),
+        _ => None,
     }
 }
