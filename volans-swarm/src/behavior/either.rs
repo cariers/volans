@@ -1,7 +1,7 @@
 use std::task::{Context, Poll};
 
 use either::Either;
-use volans_core::{PeerId, Url};
+use volans_core::{PeerId, Multiaddr};
 
 use crate::{
     BehaviorEvent, ConnectionDenied, ConnectionId, DialOpts, ListenerEvent, NetworkBehavior,
@@ -58,8 +58,8 @@ where
     fn handle_pending_connection(
         &mut self,
         id: ConnectionId,
-        local_addr: &Url,
-        remote_addr: &Url,
+        local_addr: &Multiaddr,
+        remote_addr: &Multiaddr,
     ) -> Result<(), ConnectionDenied> {
         match self {
             Either::Left(left) => left.handle_pending_connection(id, local_addr, remote_addr),
@@ -72,8 +72,8 @@ where
         &mut self,
         id: ConnectionId,
         peer_id: PeerId,
-        local_addr: &Url,
-        remote_addr: &Url,
+        local_addr: &Multiaddr,
+        remote_addr: &Multiaddr,
     ) -> Result<Self::ConnectionHandler, ConnectionDenied> {
         match self {
             Either::Left(left) => left
@@ -90,8 +90,8 @@ where
         &mut self,
         id: ConnectionId,
         peer_id: PeerId,
-        local_addr: &Url,
-        remote_addr: &Url,
+        local_addr: &Multiaddr,
+        remote_addr: &Multiaddr,
     ) {
         match self {
             Either::Left(left) => {
@@ -107,8 +107,8 @@ where
         &mut self,
         id: ConnectionId,
         peer_id: PeerId,
-        local_addr: &Url,
-        remote_addr: &Url,
+        local_addr: &Multiaddr,
+        remote_addr: &Multiaddr,
         reason: Option<&ConnectionError>,
     ) {
         match self {
@@ -126,8 +126,8 @@ where
         &mut self,
         id: ConnectionId,
         peer_id: Option<PeerId>,
-        local_addr: &Url,
-        remote_addr: &Url,
+        local_addr: &Multiaddr,
+        remote_addr: &Multiaddr,
         error: &ListenError,
     ) {
         match self {
@@ -158,8 +158,8 @@ where
         &mut self,
         id: ConnectionId,
         maybe_peer: Option<PeerId>,
-        addr: &Option<Url>,
-    ) -> Result<Option<Url>, ConnectionDenied> {
+        addr: &Option<Multiaddr>,
+    ) -> Result<Option<Multiaddr>, ConnectionDenied> {
         match self {
             Either::Left(left) => left.handle_pending_connection(id, maybe_peer, addr),
             Either::Right(right) => right.handle_pending_connection(id, maybe_peer, addr),
@@ -170,7 +170,7 @@ where
         &mut self,
         id: ConnectionId,
         peer_id: PeerId,
-        addr: &Url,
+        addr: &Multiaddr,
     ) -> Result<Self::ConnectionHandler, ConnectionDenied> {
         match self {
             Either::Left(left) => left
@@ -183,7 +183,7 @@ where
     }
 
     /// 连接处理器事件处理
-    fn on_connection_established(&mut self, id: ConnectionId, peer_id: PeerId, addr: &Url) {
+    fn on_connection_established(&mut self, id: ConnectionId, peer_id: PeerId, addr: &Multiaddr) {
         match self {
             Either::Left(left) => left.on_connection_established(id, peer_id, addr),
             Either::Right(right) => right.on_connection_established(id, peer_id, addr),
@@ -194,7 +194,7 @@ where
         &mut self,
         id: ConnectionId,
         peer_id: PeerId,
-        addr: &Url,
+        addr: &Multiaddr,
         reason: Option<&ConnectionError>,
     ) {
         match self {
@@ -208,7 +208,7 @@ where
         &mut self,
         id: ConnectionId,
         peer_id: Option<PeerId>,
-        addr: Option<&Url>,
+        addr: Option<&Multiaddr>,
         error: &DialError,
     ) {
         match self {

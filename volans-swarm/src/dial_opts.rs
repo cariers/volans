@@ -1,6 +1,6 @@
 use std::fmt;
 
-use volans_core::{PeerId, Url};
+use volans_core::{PeerId, Multiaddr};
 
 use crate::ConnectionId;
 
@@ -8,12 +8,12 @@ use crate::ConnectionId;
 pub struct DialOpts {
     peer_id: Option<PeerId>,
     condition: PeerCondition,
-    addr: Option<Url>,
+    addr: Option<Multiaddr>,
     connection_id: ConnectionId,
 }
 
 impl DialOpts {
-    pub fn new(addr: Option<Url>, peer_id: Option<PeerId>) -> Self {
+    pub fn new(addr: Option<Multiaddr>, peer_id: Option<PeerId>) -> Self {
         Self {
             peer_id,
             condition: PeerCondition::default(),
@@ -39,7 +39,7 @@ impl DialOpts {
         self.connection_id
     }
 
-    pub fn addr(&self) -> Option<Url> {
+    pub fn addr(&self) -> Option<Multiaddr> {
         self.addr.clone()
     }
 }

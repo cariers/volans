@@ -16,7 +16,7 @@ use futures::{
 };
 use tracing::Instrument;
 use volans_core::{
-    ConnectedPoint, PeerId, Url,
+    ConnectedPoint, PeerId, Multiaddr,
     muxing::{StreamMuxerBox, StreamMuxerExt},
 };
 
@@ -183,7 +183,7 @@ where
         &mut self,
         id: ConnectionId,
         future: TFut,
-        addr: Url,
+        addr: Multiaddr,
         peer_id: Option<PeerId>,
     ) where
         TFut: Future<Output = Result<(PeerId, StreamMuxerBox), io::Error>> + Send + 'static,
@@ -222,8 +222,8 @@ where
         &mut self,
         id: ConnectionId,
         future: TFut,
-        local_addr: Url,
-        remote_addr: Url,
+        local_addr: Multiaddr,
+        remote_addr: Multiaddr,
     ) where
         TFut: Future<Output = Result<(PeerId, StreamMuxerBox), io::Error>> + Send + 'static,
     {

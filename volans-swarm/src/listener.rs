@@ -8,7 +8,7 @@ use std::{
 
 use futures::{FutureExt, Stream, channel::oneshot};
 use volans_core::{
-    Listener, ListenerEvent, PeerId, Url, muxing::StreamMuxerBox, transport::BoxedListener,
+    Listener, ListenerEvent, PeerId, Multiaddr, muxing::StreamMuxerBox, transport::BoxedListener,
 };
 
 static NEXT_LISTENER_ID: AtomicUsize = AtomicUsize::new(1);
@@ -120,11 +120,11 @@ impl Stream for TaggedListener {
 #[derive(Debug)]
 pub struct ListenOpts {
     id: ListenerId,
-    addr: Url,
+    addr: Multiaddr,
 }
 
 impl ListenOpts {
-    pub fn new(addr: Url) -> ListenOpts {
+    pub fn new(addr: Multiaddr) -> ListenOpts {
         ListenOpts {
             id: ListenerId::next(),
             addr,
@@ -135,7 +135,7 @@ impl ListenOpts {
         self.id
     }
 
-    pub fn addr(&self) -> &Url {
+    pub fn addr(&self) -> &Multiaddr {
         &self.addr
     }
 }

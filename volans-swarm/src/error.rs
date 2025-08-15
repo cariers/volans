@@ -1,6 +1,6 @@
 use std::{error, fmt, io};
 
-use volans_core::{PeerId, TransportError, Url};
+use volans_core::{PeerId, TransportError, Multiaddr};
 
 use crate::dial_opts;
 
@@ -52,7 +52,7 @@ pub enum DialError {
         cause: ConnectionDenied,
     },
     Transport {
-        addr: Url,
+        addr: Multiaddr,
         #[source]
         error: TransportError<io::Error>,
     },
@@ -159,7 +159,7 @@ pub enum ConnectionError {
 #[derive(Debug)]
 pub enum PendingConnectionError {
     Transport {
-        addr: Url,
+        addr: Multiaddr,
         error: TransportError<io::Error>,
     },
     Aborted,

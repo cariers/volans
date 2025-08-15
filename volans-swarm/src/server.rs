@@ -9,7 +9,7 @@ use std::{
 use futures::{Stream, StreamExt, channel::oneshot, stream::SelectAll};
 use smallvec::SmallVec;
 use volans_core::{
-    ConnectedPoint, PeerId, Transport, TransportError, Url, muxing::StreamMuxerBox, transport,
+    ConnectedPoint, Multiaddr, PeerId, Transport, TransportError, muxing::StreamMuxerBox, transport,
 };
 
 use crate::{
@@ -37,7 +37,7 @@ where
     /// listeners
     listeners: SelectAll<listener::TaggedListener>,
     listeners_abort: HashMap<ListenerId, oneshot::Sender<Infallible>>,
-    listened_addresses: HashMap<ListenerId, SmallVec<[Url; 1]>>,
+    listened_addresses: HashMap<ListenerId, SmallVec<[Multiaddr; 1]>>,
 
     /// Swarm 等待处理的事件
     pending_swarm_events: VecDeque<SwarmEvent<TBehavior::Event>>,
@@ -101,11 +101,11 @@ where
     }
 
     /// 开始监听指定的地址
-    pub fn listen_on(&mut self, addr: Url) -> Result<ListenerId, TransportError<io::Error>> {
+    pub fn listen_on(&mut self, addr: Multiaddr) -> Result<ListenerId, TransportError<io::Error>> {
         let opts = ListenOpts::new(addr);
         let listener_id = opts.listener_id();
         let addr = opts.addr();
-        match self.transport.listen(&addr) {
+        match self.transport.listen(addr.clone()) {
             Ok(listener) => {
                 let (close_tx, close_rx) = oneshot::channel();
                 let tagged_listener =
@@ -128,7 +128,7 @@ where
     }
 
     /// 获取所有监听的地址
-    pub fn listeners(&self) -> impl Iterator<Item = &Url> {
+    pub fn listeners(&self) -> impl Iterator<Item = &Multiaddr> {
         self.listened_addresses.values().flatten()
     }
 
@@ -537,7 +537,7 @@ pub enum SwarmEvent<TBehaviorEvent> {
 
     NewListenAddr {
         listener_id: ListenerId,
-        addr: Url,
+        addr: Multiaddr,
     },
 
     ListenerClosed {
@@ -552,14 +552,14 @@ pub enum SwarmEvent<TBehaviorEvent> {
 
     IncomingConnection {
         connection_id: ConnectionId,
-        local_addr: Url,
-        remote_addr: Url,
+        local_addr: Multiaddr,
+        remote_addr: Multiaddr,
     },
 
     IncomingConnectionError {
         connection_id: ConnectionId,
-        local_addr: Url,
-        remote_addr: Url,
+        local_addr: Multiaddr,
+        remote_addr: Multiaddr,
         error: ListenError,
         peer_id: Option<PeerId>,
     },
@@ -567,8 +567,8 @@ pub enum SwarmEvent<TBehaviorEvent> {
     ConnectionEstablished {
         peer_id: PeerId,
         connection_id: ConnectionId,
-        local_addr: Url,
-        remote_addr: Url,
+        local_addr: Multiaddr,
+        remote_addr: Multiaddr,
         num_established: usize,
         established_in: std::time::Duration,
     },
@@ -576,8 +576,8 @@ pub enum SwarmEvent<TBehaviorEvent> {
     ConnectionClosed {
         connection_id: ConnectionId,
         peer_id: PeerId,
-        local_addr: Url,
-        remote_addr: Url,
+        local_addr: Multiaddr,
+        remote_addr: Multiaddr,
         num_remaining_established: usize,
         error: Option<ConnectionError>,
     },

@@ -5,7 +5,9 @@ use std::{
 };
 
 use futures::Stream;
-use volans_core::{ConnectedPoint, PeerId, Transport, Url, muxing::StreamMuxerBox, transport};
+use volans_core::{
+    ConnectedPoint, Multiaddr, PeerId, Transport, muxing::StreamMuxerBox, transport,
+};
 
 use crate::{
     BehaviorEvent, ConnectionId, DialOpts, NetworkOutgoingBehavior, OutboundStreamHandler,
@@ -91,7 +93,7 @@ where
     }
 
     /// 创建一个新的 Swarm 实例
-    pub fn dial(&mut self, opts: DialOpts) -> Result<Url, DialError> {
+    pub fn dial(&mut self, opts: DialOpts) -> Result<Multiaddr, DialError> {
         let peer_id = opts.peer_id();
         let condition = opts.condition();
         let connection_id = opts.connection_id();
@@ -136,7 +138,7 @@ where
         };
 
         // 1.开始执行Transport 连接，
-        let future = match self.transport.dial(&addr) {
+        let future = match self.transport.dial(addr.clone()) {
             Ok(dial) => dial,
             Err(error) => {
                 let err = DialError::Transport {
@@ -411,21 +413,21 @@ pub enum SwarmEvent<TBehaviorEvent> {
 
     Dialing {
         peer_id: Option<PeerId>,
-        addr: Url,
+        addr: Multiaddr,
         connection_id: ConnectionId,
     },
 
     ConnectionError {
         peer_id: Option<PeerId>,
         connection_id: ConnectionId,
-        addr: Option<Url>,
+        addr: Option<Multiaddr>,
         error: DialError,
     },
 
     ConnectionEstablished {
         peer_id: PeerId,
         connection_id: ConnectionId,
-        addr: Url,
+        addr: Multiaddr,
         num_established: usize,
         established_in: std::time::Duration,
     },
@@ -433,7 +435,7 @@ pub enum SwarmEvent<TBehaviorEvent> {
     ConnectionClosed {
         connection_id: ConnectionId,
         peer_id: PeerId,
-        addr: Url,
+        addr: Multiaddr,
         num_remaining_established: usize,
         error: Option<ConnectionError>,
     },

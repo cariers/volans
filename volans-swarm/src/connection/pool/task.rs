@@ -5,7 +5,7 @@ use futures::{
     channel::{mpsc, oneshot},
     future,
 };
-use volans_core::{PeerId, TransportError, Url, muxing::StreamMuxerBox};
+use volans_core::{PeerId, TransportError, Multiaddr, muxing::StreamMuxerBox};
 
 use crate::{
     ConnectionHandler, ConnectionId,
@@ -56,7 +56,7 @@ pub(crate) enum EstablishedConnectionEvent<TEvent> {
 
 pub(crate) async fn new_for_pending_connection<TFut>(
     connection_id: ConnectionId,
-    addr: Url,
+    addr: Multiaddr,
     future: TFut,
     abort_receiver: oneshot::Receiver<Infallible>,
     mut events: mpsc::Sender<PendingConnectionEvent>,

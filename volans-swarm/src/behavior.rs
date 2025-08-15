@@ -2,7 +2,7 @@ mod either;
 
 use std::task::{Context, Poll};
 
-use volans_core::{PeerId, Url};
+use volans_core::{PeerId, Multiaddr};
 
 use crate::{
     ConnectionDenied, ConnectionHandler, ConnectionId, DialOpts, ListenerId, THandlerAction,
@@ -32,8 +32,8 @@ pub trait NetworkIncomingBehavior: NetworkBehavior {
     fn handle_pending_connection(
         &mut self,
         _id: ConnectionId,
-        _local_addr: &Url,
-        _remote_addr: &Url,
+        _local_addr: &Multiaddr,
+        _remote_addr: &Multiaddr,
     ) -> Result<(), ConnectionDenied> {
         Ok(())
     }
@@ -43,8 +43,8 @@ pub trait NetworkIncomingBehavior: NetworkBehavior {
         &mut self,
         _id: ConnectionId,
         peer_id: PeerId,
-        _local_addr: &Url,
-        _remote_addr: &Url,
+        _local_addr: &Multiaddr,
+        _remote_addr: &Multiaddr,
     ) -> Result<Self::ConnectionHandler, ConnectionDenied>;
 
     /// 连接处理器事件处理
@@ -52,8 +52,8 @@ pub trait NetworkIncomingBehavior: NetworkBehavior {
         &mut self,
         _id: ConnectionId,
         _peer_id: PeerId,
-        _local_addr: &Url,
-        _remote_addr: &Url,
+        _local_addr: &Multiaddr,
+        _remote_addr: &Multiaddr,
     ) {
     }
 
@@ -61,8 +61,8 @@ pub trait NetworkIncomingBehavior: NetworkBehavior {
         &mut self,
         _id: ConnectionId,
         _peer_id: PeerId,
-        _local_addr: &Url,
-        _remote_addr: &Url,
+        _local_addr: &Multiaddr,
+        _remote_addr: &Multiaddr,
         _reason: Option<&ConnectionError>,
     ) {
     }
@@ -72,8 +72,8 @@ pub trait NetworkIncomingBehavior: NetworkBehavior {
         &mut self,
         _id: ConnectionId,
         _peer_id: Option<PeerId>,
-        _local_addr: &Url,
-        _remote_addr: &Url,
+        _local_addr: &Multiaddr,
+        _remote_addr: &Multiaddr,
         _error: &ListenError,
     ) {
     }
@@ -87,8 +87,8 @@ pub trait NetworkOutgoingBehavior: NetworkBehavior {
         &mut self,
         _id: ConnectionId,
         _maybe_peer: Option<PeerId>,
-        _addr: &Option<Url>,
-    ) -> Result<Option<Url>, ConnectionDenied> {
+        _addr: &Option<Multiaddr>,
+    ) -> Result<Option<Multiaddr>, ConnectionDenied> {
         Ok(None)
     }
 
@@ -96,17 +96,17 @@ pub trait NetworkOutgoingBehavior: NetworkBehavior {
         &mut self,
         id: ConnectionId,
         peer_id: PeerId,
-        addr: &Url,
+        addr: &Multiaddr,
     ) -> Result<Self::ConnectionHandler, ConnectionDenied>;
 
     /// 连接处理器事件处理
-    fn on_connection_established(&mut self, _id: ConnectionId, _peer_id: PeerId, _addr: &Url) {}
+    fn on_connection_established(&mut self, _id: ConnectionId, _peer_id: PeerId, _addr: &Multiaddr) {}
 
     fn on_connection_closed(
         &mut self,
         _id: ConnectionId,
         _peer_id: PeerId,
-        _addr: &Url,
+        _addr: &Multiaddr,
         _reason: Option<&ConnectionError>,
     ) {
     }
@@ -116,7 +116,7 @@ pub trait NetworkOutgoingBehavior: NetworkBehavior {
         &mut self,
         _id: ConnectionId,
         _peer_id: Option<PeerId>,
-        _addr: Option<&Url>,
+        _addr: Option<&Multiaddr>,
         _error: &DialError,
     ) {
     }
@@ -149,7 +149,7 @@ pub struct NewListener {
 #[derive(Debug, Clone, Copy)]
 pub struct NewListenAddr<'a> {
     pub listener_id: ListenerId,
-    pub addr: &'a Url,
+    pub addr: &'a Multiaddr,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -167,7 +167,7 @@ pub struct ListenerClosed<'a> {
 #[derive(Debug, Clone, Copy)]
 pub struct ExpiredListenAddr<'a> {
     pub listener_id: ListenerId,
-    pub addr: &'a Url,
+    pub addr: &'a Multiaddr,
 }
 
 #[derive(Debug)]

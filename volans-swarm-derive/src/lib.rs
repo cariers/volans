@@ -66,7 +66,7 @@ fn build_outgoing(ast: &DeriveInput) -> syn::Result<TokenStream> {
 }
 
 struct PreludeTokenStream {
-    url: proc_macro2::TokenStream,
+    addr: proc_macro2::TokenStream,
     peer_id: proc_macro2::TokenStream,
     behavior_event: proc_macro2::TokenStream,
     listener_event: proc_macro2::TokenStream,
@@ -111,7 +111,7 @@ fn parse_common_token_stream(ast: &DeriveInput) -> syn::Result<CommonParsed> {
     };
 
     let prelude = PreludeTokenStream {
-        url: quote! { #prelude_path::Url },
+        addr: quote! { #prelude_path::Multiaddr },
         peer_id: quote! { #prelude_path::PeerId },
         behavior_event: quote! { #prelude_path::BehaviorEvent },
         listener_event: quote! { #prelude_path::ListenerEvent },
@@ -457,7 +457,7 @@ fn build_incoming_struct(ast: &DeriveInput, data_struct: &DataStruct) -> syn::Re
     let CommonParsed {
         prelude:
             PreludeTokenStream {
-                url,
+                addr,
                 peer_id,
                 listener_event,
                 connection_id,
@@ -584,8 +584,8 @@ fn build_incoming_struct(ast: &DeriveInput, data_struct: &DataStruct) -> syn::Re
             fn handle_pending_connection(
                 &mut self,
                 id: #connection_id,
-                local_addr: &#url,
-                remote_addr: &#url
+                local_addr: &#addr,
+                remote_addr: &#addr
             ) -> Result<(), #connection_denied> {
                 #(#handle_pending_inbound_connection_stmts)*
                 Ok(())
@@ -595,8 +595,8 @@ fn build_incoming_struct(ast: &DeriveInput, data_struct: &DataStruct) -> syn::Re
                 &mut self,
                 id: #connection_id,
                 peer_id: #peer_id,
-                local_addr: &#url,
-                remote_addr: &#url
+                local_addr: &#addr,
+                remote_addr: &#addr
             ) -> Result<Self::ConnectionHandler, #connection_denied> {
                 Ok(#handle_established_inbound_connection)
             }
@@ -605,8 +605,8 @@ fn build_incoming_struct(ast: &DeriveInput, data_struct: &DataStruct) -> syn::Re
                 &mut self,
                 id: #connection_id,
                 peer_id: #peer_id,
-                local_addr: &#url,
-                remote_addr: &#url,
+                local_addr: &#addr,
+                remote_addr: &#addr,
             ) {
                 #(#on_connection_established_stmts)*
             }
@@ -615,8 +615,8 @@ fn build_incoming_struct(ast: &DeriveInput, data_struct: &DataStruct) -> syn::Re
                 &mut self,
                 id: #connection_id,
                 peer_id: #peer_id,
-                local_addr: &#url,
-                remote_addr: &#url,
+                local_addr: &#addr,
+                remote_addr: &#addr,
                 reason: Option<&#connection_error>,
             ) {
                 #(#on_connection_closed_stmts)*
@@ -626,8 +626,8 @@ fn build_incoming_struct(ast: &DeriveInput, data_struct: &DataStruct) -> syn::Re
                 &mut self,
                 id: #connection_id,
                 peer_id: Option<#peer_id>,
-                local_addr: &#url,
-                remote_addr: &#url,
+                local_addr: &#addr,
+                remote_addr: &#addr,
                 error: &#listen_error,
             ) {
                 #(#on_listen_failure_stmts)*
@@ -656,7 +656,7 @@ fn build_outgoing_struct(ast: &DeriveInput, data_struct: &DataStruct) -> syn::Re
     let CommonParsed {
         prelude:
             PreludeTokenStream {
-                url,
+                addr,
                 peer_id,
                 connection_id,
                 connection_denied,
@@ -791,8 +791,8 @@ fn build_outgoing_struct(ast: &DeriveInput, data_struct: &DataStruct) -> syn::Re
                 &mut self,
                 id: #connection_id,
                 maybe_peer: Option<#peer_id>,
-                maybe_addr: &Option<#url>,
-            ) -> Result<Option<#url>, #connection_denied> {
+                maybe_addr: &Option<#addr>,
+            ) -> Result<Option<#addr>, #connection_denied> {
                 #handle_pending_outbound_connection
             }
 
@@ -800,7 +800,7 @@ fn build_outgoing_struct(ast: &DeriveInput, data_struct: &DataStruct) -> syn::Re
                 &mut self,
                 id: #connection_id,
                 peer_id: #peer_id,
-                addr: &#url,
+                addr: &#addr,
             ) -> Result<Self::ConnectionHandler, #connection_denied> {
                 Ok(#handle_established_outbound_connection)
             }
@@ -810,7 +810,7 @@ fn build_outgoing_struct(ast: &DeriveInput, data_struct: &DataStruct) -> syn::Re
                 &mut self,
                 id: #connection_id,
                 peer_id: #peer_id,
-                addr: &#url
+                addr: &#addr
             ) {
                 #(#on_connection_established_stmts)*
             }
@@ -819,7 +819,7 @@ fn build_outgoing_struct(ast: &DeriveInput, data_struct: &DataStruct) -> syn::Re
                 &mut self,
                 id: #connection_id,
                 peer_id: #peer_id,
-                addr: &#url,
+                addr: &#addr,
                 reason: Option<&#connection_error>,
             ) {
                 #(#on_connection_closed_stmts)*
@@ -829,7 +829,7 @@ fn build_outgoing_struct(ast: &DeriveInput, data_struct: &DataStruct) -> syn::Re
                 &mut self,
                 id: #connection_id,
                 maybe_peer: Option<#peer_id>,
-                maybe_addr: Option<&#url>,
+                maybe_addr: Option<&#addr>,
                 error: &#dial_error,
             ) {
                 #(#on_dial_failure_stmts)*

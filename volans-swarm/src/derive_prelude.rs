@@ -7,4 +7,4 @@ pub use crate::{
 };
 pub use either::Either;
 pub use futures::prelude as futures;
-pub use volans_core::{ConnectedPoint, Endpoint, PeerId, Url};
+pub use volans_core::{ConnectedPoint, Endpoint, PeerId, Multiaddr};
