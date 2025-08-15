@@ -11,10 +11,10 @@ use std::{
 };
 
 use futures::{AsyncRead, AsyncWrite, TryFuture, future, ready};
-use url::Url;
 
 use crate::{
-    ConnectedPoint, Listener, ListenerEvent, Negotiated, PeerId, Transport, TransportError,
+    ConnectedPoint, Listener, ListenerEvent, Multiaddr, Negotiated, PeerId, Transport,
+    TransportError,
     transport::{and_then::AndThen, apply::UpgradeApplyError},
     upgrade::{
         self, InboundConnectionUpgrade, InboundUpgradeApply, OutboundConnectionUpgrade,
@@ -86,7 +86,7 @@ where
     type Incoming = ListenerUpgradeFuture<T::Incoming, U, C>;
     type Listener = UpgradeListener<T, U>;
 
-    fn dial(&self, addr: &Url) -> Result<Self::Dial, TransportError<Self::Error>> {
+    fn dial(&self, addr: Multiaddr) -> Result<Self::Dial, TransportError<Self::Error>> {
         let fut = self
             .inner
             .dial(addr)
@@ -97,7 +97,7 @@ where
         })
     }
 
-    fn listen(&self, addr: &Url) -> Result<Self::Listener, TransportError<Self::Error>> {
+    fn listen(&self, addr: Multiaddr) -> Result<Self::Listener, TransportError<Self::Error>> {
         let inner = self
             .inner
             .listen(addr)

@@ -5,9 +5,8 @@ use std::{
 
 use either::Either;
 use futures::TryFuture;
-use url::Url;
 
-use crate::{Listener, ListenerEvent, Transport, TransportError};
+use crate::{Listener, ListenerEvent, Multiaddr, Transport, TransportError};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Choice<A, B> {
@@ -32,13 +31,8 @@ where
     type Incoming = ChoiceFuture<A::Incoming, B::Incoming>;
     type Listener = ChoiceListener<A, B>;
 
-    fn dial(&self, addr: &Url) -> Result<Self::Dial, TransportError<Self::Error>> {
-        tracing::trace!(
-            address=%addr,
-            "Attempting to dial using {}",
-            std::any::type_name::<A>()
-        );
-        match self.first.dial(addr) {
+    fn dial(&self, addr: Multiaddr) -> Result<Self::Dial, TransportError<Self::Error>> {
+        match self.first.dial(addr.clone()) {
             Ok(dial) => return Ok(ChoiceFuture::First(dial)),
             Err(TransportError::Other(err)) => {
                 return Err(TransportError::Other(Either::Left(err)));
@@ -50,24 +44,15 @@ where
                 );
             }
         }
-        tracing::trace!(
-            address=%addr,
-            "Attempting to dial {}",
-            std::any::type_name::<B>()
-        );
+
         match self.second.dial(addr) {
             Ok(dial) => Ok(ChoiceFuture::Second(dial)),
             Err(err) => Err(err.map(Either::Right)),
         }
     }
 
-    fn listen(&self, addr: &Url) -> Result<Self::Listener, TransportError<Self::Error>> {
-        tracing::trace!(
-            address=%addr,
-            "Attempting to listen using {}",
-            std::any::type_name::<A>()
-        );
-        match self.first.listen(addr) {
+    fn listen(&self, addr: Multiaddr) -> Result<Self::Listener, TransportError<Self::Error>> {
+        match self.first.listen(addr.clone()) {
             Ok(listener) => return Ok(ChoiceListener::Left(listener)),
             Err(TransportError::Other(err)) => {
                 return Err(TransportError::Other(Either::Left(err)));
@@ -79,11 +64,6 @@ where
                 );
             }
         }
-        tracing::trace!(
-            address=%addr,
-            "Attempting to listen using {}",
-            std::any::type_name::<B>()
-        );
         match self.second.listen(addr) {
             Ok(listener) => Ok(ChoiceListener::Right(listener)),
             Err(err) => Err(err.map(Either::Right)),

@@ -1,9 +1,14 @@
-use url::Url;
+use crate::Multiaddr;
 
 #[derive(PartialEq, Eq, Debug, Clone, Hash)]
 pub enum ConnectedPoint {
-    Dialer { addr: Url },
-    Listener { local_addr: Url, remote_addr: Url },
+    Dialer {
+        addr: Multiaddr,
+    },
+    Listener {
+        local_addr: Multiaddr,
+        remote_addr: Multiaddr,
+    },
 }
 
 impl ConnectedPoint {

@@ -1,11 +1,10 @@
-use crate::{ConnectedPoint, Listener, ListenerEvent, Transport, TransportError};
+use crate::{ConnectedPoint, Listener, ListenerEvent, Multiaddr, Transport, TransportError};
 use futures::TryFuture;
 use std::{
     marker::PhantomData,
     pin::Pin,
     task::{Context, Poll},
 };
-use url::Url;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Map<T, F> {
@@ -34,20 +33,17 @@ where
     type Incoming = MapFuture<T::Incoming, TMap>;
     type Listener = MapListener<T, TMap>;
 
-    fn dial(&self, addr: &Url) -> Result<Self::Dial, TransportError<Self::Error>> {
-        match self.transport.dial(addr) {
+    fn dial(&self, addr: Multiaddr) -> Result<Self::Dial, TransportError<Self::Error>> {
+        match self.transport.dial(addr.clone()) {
             Ok(dial) => Ok(MapFuture {
                 inner: dial,
-                args: Some((
-                    self.map.clone(),
-                    ConnectedPoint::Dialer { addr: addr.clone() },
-                )),
+                args: Some((self.map.clone(), ConnectedPoint::Dialer { addr })),
             }),
             Err(err) => Err(err),
         }
     }
 
-    fn listen(&self, addr: &Url) -> Result<Self::Listener, TransportError<Self::Error>> {
+    fn listen(&self, addr: Multiaddr) -> Result<Self::Listener, TransportError<Self::Error>> {
         match self.transport.listen(addr) {
             Ok(listener) => Ok(MapListener {
                 inner: listener,

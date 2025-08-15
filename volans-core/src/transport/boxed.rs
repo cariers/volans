@@ -5,13 +5,12 @@ use std::{
 };
 
 use futures::{TryFutureExt, ready};
-use url::Url;
 
-use crate::{Listener, ListenerEvent, Transport, TransportError};
+use crate::{Listener, ListenerEvent, Multiaddr, Transport, TransportError};
 
 trait Abstract<O> {
-    fn dial(&self, addr: &Url) -> Result<BoxedUpgrade<O>, TransportError<io::Error>>;
-    fn listen(&self, addr: &Url) -> Result<BoxedListener<O>, TransportError<io::Error>>;
+    fn dial(&self, addr: Multiaddr) -> Result<BoxedUpgrade<O>, TransportError<io::Error>>;
+    fn listen(&self, addr: Multiaddr) -> Result<BoxedListener<O>, TransportError<io::Error>>;
 }
 
 impl<T, O> Abstract<O> for T
@@ -22,14 +21,14 @@ where
     T::Incoming: Send + 'static,
     T::Listener: Send + Unpin,
 {
-    fn dial(&self, addr: &Url) -> Result<BoxedUpgrade<O>, TransportError<io::Error>> {
+    fn dial(&self, addr: Multiaddr) -> Result<BoxedUpgrade<O>, TransportError<io::Error>> {
         let fut = Transport::dial(self, addr)
             .map_err(|e| e.map(box_err))?
             .map_err(|e| box_err(e));
         Ok(Box::pin(fut) as BoxedUpgrade<O>)
     }
 
-    fn listen(&self, addr: &Url) -> Result<BoxedListener<O>, TransportError<io::Error>> {
+    fn listen(&self, addr: Multiaddr) -> Result<BoxedListener<O>, TransportError<io::Error>> {
         let listener = Transport::listen(self, addr).map_err(|e| e.map(box_err))?;
 
         Ok(BoxedListener {
@@ -108,11 +107,11 @@ impl<O> Transport for Boxed<O> {
     type Incoming = BoxedUpgrade<O>;
     type Listener = BoxedListener<O>;
 
-    fn dial(&self, addr: &Url) -> Result<Self::Dial, TransportError<Self::Error>> {
+    fn dial(&self, addr: Multiaddr) -> Result<Self::Dial, TransportError<Self::Error>> {
         self.inner.dial(addr)
     }
 
-    fn listen(&self, addr: &Url) -> Result<Self::Listener, TransportError<Self::Error>> {
+    fn listen(&self, addr: Multiaddr) -> Result<Self::Listener, TransportError<Self::Error>> {
         self.inner.listen(addr)
     }
 }

@@ -9,7 +9,7 @@ use std::{
 use futures::TryFuture;
 use futures_timer::Delay;
 
-use crate::{Listener, Transport, TransportError};
+use crate::{Listener, Multiaddr, Transport, TransportError};
 
 #[derive(Debug, Clone)]
 pub struct Timeout<T> {
@@ -57,7 +57,7 @@ where
     type Incoming = TimeoutFuture<T::Incoming>;
     type Listener = TimeoutListener<T>;
 
-    fn dial(&self, addr: &url::Url) -> Result<Self::Dial, TransportError<Self::Error>> {
+    fn dial(&self, addr: Multiaddr) -> Result<Self::Dial, TransportError<Self::Error>> {
         let fut = self
             .inner
             .dial(addr)
@@ -68,7 +68,7 @@ where
         })
     }
 
-    fn listen(&self, addr: &url::Url) -> Result<Self::Listener, TransportError<Self::Error>> {
+    fn listen(&self, addr: Multiaddr) -> Result<Self::Listener, TransportError<Self::Error>> {
         let listener = self
             .inner
             .listen(addr)

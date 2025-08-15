@@ -1,5 +1,5 @@
 use super::{Multiaddr, Protocol};
-use std::{error, fmt, iter, net::IpAddr};
+use std::{error, fmt, net::IpAddr};
 
 pub fn from_url(url: &str) -> std::result::Result<Multiaddr, FromUrlErr> {
     from_url_inner(url, false)

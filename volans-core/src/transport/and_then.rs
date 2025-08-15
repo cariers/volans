@@ -6,9 +6,8 @@ use std::{
 
 use either::Either;
 use futures::TryFuture;
-use url::Url;
 
-use crate::{ConnectedPoint, Listener, ListenerEvent, Transport, TransportError};
+use crate::{ConnectedPoint, Listener, ListenerEvent, Multiaddr, Transport, TransportError};
 
 #[derive(Debug, Copy, Clone)]
 pub struct AndThen<T, TMap> {
@@ -38,20 +37,17 @@ where
     type Incoming = AndThenFuture<T::Incoming, TMap, TMapFut>;
     type Listener = AndThenListener<T, TMap>;
 
-    fn dial(&self, addr: &Url) -> Result<Self::Dial, TransportError<Self::Error>> {
-        match self.transport.dial(addr) {
+    fn dial(&self, addr: Multiaddr) -> Result<Self::Dial, TransportError<Self::Error>> {
+        match self.transport.dial(addr.clone()) {
             Ok(dial) => Ok(AndThenFuture {
                 inner: Either::Left(Box::pin(dial)),
-                args: Some((
-                    self.map.clone(),
-                    ConnectedPoint::Dialer { addr: addr.clone() },
-                )),
+                args: Some((self.map.clone(), ConnectedPoint::Dialer { addr })),
             }),
             Err(err) => Err(err.map(Either::Left)),
         }
     }
 
-    fn listen(&self, addr: &Url) -> Result<Self::Listener, TransportError<Self::Error>> {
+    fn listen(&self, addr: Multiaddr) -> Result<Self::Listener, TransportError<Self::Error>> {
         match self.transport.listen(addr) {
             Ok(listener) => Ok(AndThenListener {
                 inner: listener,

@@ -4,10 +4,9 @@ use std::{
 };
 
 use futures::{AsyncRead, AsyncWrite, future, ready};
-use url::Url;
 
 use crate::{
-    ConnectedPoint, Negotiated, PeerId, StreamMuxer, Transport, TransportError,
+    ConnectedPoint, Multiaddr, Negotiated, PeerId, StreamMuxer, Transport, TransportError,
     muxing::StreamMuxerBox,
     transport::{Boxed, and_then::AndThen, boxed::boxed},
     upgrade::{
@@ -66,10 +65,10 @@ where
     type Dial = T::Dial;
     type Incoming = T::Incoming;
     type Listener = T::Listener;
-    fn dial(&self, addr: &Url) -> Result<Self::Dial, TransportError<Self::Error>> {
+    fn dial(&self, addr: Multiaddr) -> Result<Self::Dial, TransportError<Self::Error>> {
         self.0.dial(addr)
     }
-    fn listen(&self, addr: &Url) -> Result<Self::Listener, TransportError<Self::Error>> {
+    fn listen(&self, addr: Multiaddr) -> Result<Self::Listener, TransportError<Self::Error>> {
         self.0.listen(addr)
     }
 }

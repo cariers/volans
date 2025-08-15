@@ -3,9 +3,7 @@ use std::{
     task::{Context, Poll},
 };
 
-use url::Url;
-
-use crate::{Listener, ListenerEvent, Transport, TransportError};
+use crate::{Listener, ListenerEvent, Multiaddr, Transport, TransportError};
 
 #[derive(Debug, Copy, Clone)]
 pub struct MapErr<T, F> {
@@ -31,7 +29,7 @@ where
     type Incoming = MapErrUpgrade<T, F>;
     type Listener = MapErrListener<T, F>;
 
-    fn dial(&self, addr: &Url) -> Result<Self::Dial, TransportError<Self::Error>> {
+    fn dial(&self, addr: Multiaddr) -> Result<Self::Dial, TransportError<Self::Error>> {
         let map = self.map.clone();
 
         match self.transport.dial(addr) {
@@ -43,7 +41,7 @@ where
         }
     }
 
-    fn listen(&self, addr: &Url) -> Result<Self::Listener, TransportError<Self::Error>> {
+    fn listen(&self, addr: Multiaddr) -> Result<Self::Listener, TransportError<Self::Error>> {
         let map = self.map.clone();
         match self.transport.listen(addr) {
             Ok(listener) => Ok(MapErrListener {

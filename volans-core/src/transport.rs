@@ -11,7 +11,6 @@ pub mod upgrade;
 pub use boxed::{Boxed, BoxedListener};
 
 use futures::TryFuture;
-use url::Url;
 
 use std::{
     error, fmt,
@@ -21,7 +20,7 @@ use std::{
 };
 
 use crate::{
-    ConnectedPoint, Negotiated,
+    ConnectedPoint, Multiaddr, Negotiated,
     upgrade::{InboundConnectionUpgrade, OutboundConnectionUpgrade},
 };
 
@@ -44,8 +43,8 @@ pub trait Transport {
     type Incoming: Future<Output = Result<Self::Output, Self::Error>>;
     type Listener: Listener<Output = Self::Output, Error = Self::Error, Upgrade = Self::Incoming>;
 
-    fn dial(&self, addr: &Url) -> Result<Self::Dial, TransportError<Self::Error>>;
-    fn listen(&self, addr: &Url) -> Result<Self::Listener, TransportError<Self::Error>>;
+    fn dial(&self, addr: Multiaddr) -> Result<Self::Dial, TransportError<Self::Error>>;
+    fn listen(&self, addr: Multiaddr) -> Result<Self::Listener, TransportError<Self::Error>>;
 
     fn and_then<D, TMap, TMapFut>(self, map: TMap) -> and_then::AndThen<Self, TMap>
     where
@@ -121,10 +120,10 @@ pub trait Transport {
 }
 
 pub enum ListenerEvent<TUpgr, TErr> {
-    Listened(Url),
+    Listened(Multiaddr),
     Incoming {
-        local_addr: Url,
-        remote_addr: Url,
+        local_addr: Multiaddr,
+        remote_addr: Multiaddr,
         upgrade: TUpgr,
     },
     Closed(Result<(), TErr>),
@@ -175,7 +174,7 @@ impl<TUpgr, TErr> ListenerEvent<TUpgr, TErr> {
 
 #[derive(Debug, Clone)]
 pub enum TransportError<TErr> {
-    NotSupported(Url),
+    NotSupported(Multiaddr),
     Other(TErr),
 }
 
