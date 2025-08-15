@@ -1,40 +1,46 @@
-mod upgrade;
-
 pub mod client;
 pub mod server;
 
-use std::fmt;
+use std::convert::Infallible;
 
-pub use upgrade::{InboundStreamUpgradeFactory, OutboundStreamUpgradeFactory, ReadyUpgrade};
-use volans_swarm::StreamProtocol;
+use futures::future::{Ready, ready};
+use volans_core::{InboundUpgrade, OutboundUpgrade, UpgradeInfo};
+use volans_swarm::{StreamProtocol, Substream};
 
-pub enum StreamEvent<TOutput, TError> {
-    FullyNegotiated {
-        protocol: StreamProtocol,
-        output: TOutput,
-    },
-    UpgradeError {
-        error: TError,
-    },
+pub struct Upgrade {
+    pub(crate) supported_protocols: Vec<StreamProtocol>,
 }
 
-impl<TOutput, TError> fmt::Debug for StreamEvent<TOutput, TError>
-where
-    TError: fmt::Debug,
-{
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            StreamEvent::FullyNegotiated {
-                output: _,
-                protocol,
-            } => f
-                .debug_struct("StreamEvent::FullyNegotiated")
-                .field("protocol", protocol)
-                .finish(),
-            StreamEvent::UpgradeError { error } => f
-                .debug_struct("StreamEvent::UpgradeError")
-                .field("error", error)
-                .finish(),
-        }
+impl UpgradeInfo for Upgrade {
+    type Info = StreamProtocol;
+
+    type InfoIter = std::vec::IntoIter<StreamProtocol>;
+
+    fn protocol_info(&self) -> Self::InfoIter {
+        self.supported_protocols.clone().into_iter()
+    }
+}
+
+impl InboundUpgrade<Substream> for Upgrade {
+    type Output = (Substream, StreamProtocol);
+
+    type Error = Infallible;
+
+    type Future = Ready<Result<Self::Output, Self::Error>>;
+
+    fn upgrade_inbound(self, socket: Substream, info: Self::Info) -> Self::Future {
+        ready(Ok((socket, info)))
+    }
+}
+
+impl OutboundUpgrade<Substream> for Upgrade {
+    type Output = (Substream, StreamProtocol);
+
+    type Error = Infallible;
+
+    type Future = Ready<Result<Self::Output, Self::Error>>;
+
+    fn upgrade_outbound(self, socket: Substream, info: Self::Info) -> Self::Future {
+        ready(Ok((socket, info)))
     }
 }

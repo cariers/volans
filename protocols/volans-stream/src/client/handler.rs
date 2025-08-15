@@ -1,6 +1,6 @@
 use std::{
     convert::Infallible,
-    sync::Arc,
+    io,
     task::{Context, Poll},
 };
 
@@ -8,58 +8,38 @@ use futures::{
     StreamExt,
     channel::{mpsc, oneshot},
 };
-use parking_lot::Mutex;
 use volans_swarm::{
     ConnectionHandler, ConnectionHandlerEvent, OutboundStreamHandler, OutboundUpgradeSend,
-    StreamProtocol, StreamUpgradeError, SubstreamProtocol,
+    StreamProtocol, StreamUpgradeError, Substream, SubstreamProtocol,
 };
 
-use super::Shared;
-use crate::OutboundStreamUpgradeFactory;
+use crate::{Upgrade, client::StreamError};
 
 #[derive(Debug)]
-pub(crate) struct NewOutboundStream<TFactory>
-where
-    TFactory: OutboundStreamUpgradeFactory,
-{
+pub(crate) struct NewStream {
     pub(crate) protocol: StreamProtocol,
-    pub(crate) sender:
-        oneshot::Sender<Result<TFactory::Output, StreamUpgradeError<TFactory::Error>>>,
+    pub(crate) sender: oneshot::Sender<Result<Substream, StreamError>>,
 }
 
-pub struct Handler<TFactory>
-where
-    TFactory: OutboundStreamUpgradeFactory,
-{
-    receiver: mpsc::Receiver<NewOutboundStream<TFactory>>,
-    shared: Arc<Mutex<Shared<TFactory>>>,
+pub struct Handler {
+    receiver: mpsc::Receiver<NewStream>,
     /// 接收的新的出站流请求
     pending_outbound: Option<(
         StreamProtocol,
-        oneshot::Sender<Result<TFactory::Output, StreamUpgradeError<TFactory::Error>>>,
+        oneshot::Sender<Result<Substream, StreamError>>,
     )>,
 }
 
-impl<TFactory> Handler<TFactory>
-where
-    TFactory: OutboundStreamUpgradeFactory,
-{
-    pub(crate) fn new(
-        shared: Arc<Mutex<Shared<TFactory>>>,
-        receiver: mpsc::Receiver<NewOutboundStream<TFactory>>,
-    ) -> Self {
+impl Handler {
+    pub(crate) fn new(receiver: mpsc::Receiver<NewStream>) -> Self {
         Self {
             receiver,
-            shared,
             pending_outbound: None,
         }
     }
 }
 
-impl<TFactory> ConnectionHandler for Handler<TFactory>
-where
-    TFactory: OutboundStreamUpgradeFactory,
-{
+impl ConnectionHandler for Handler {
     type Action = Infallible;
     type Event = Infallible;
 
@@ -72,11 +52,8 @@ where
     }
 }
 
-impl<TFactory> OutboundStreamHandler for Handler<TFactory>
-where
-    TFactory: OutboundStreamUpgradeFactory,
-{
-    type OutboundUpgrade = TFactory::Upgrade;
+impl OutboundStreamHandler for Handler {
+    type OutboundUpgrade = Upgrade;
     type OutboundUserData = ();
 
     fn on_fully_negotiated(
@@ -100,13 +77,23 @@ where
         _user_data: Self::OutboundUserData,
         error: StreamUpgradeError<<Self::OutboundUpgrade as OutboundUpgradeSend>::Error>,
     ) {
-        let Some((_protocol, sender)) = self.pending_outbound.take() else {
+        let Some((protocol, sender)) = self.pending_outbound.take() else {
             tracing::warn!(
                 "Failed to establish outbound stream for protocol {:?}",
                 error
             );
             return;
         };
+
+        let error = match error {
+            StreamUpgradeError::Timeout => {
+                StreamError::Io(io::Error::from(io::ErrorKind::TimedOut))
+            }
+            StreamUpgradeError::Apply(v) => unreachable!("Unexpected apply error: {:?}", v),
+            StreamUpgradeError::NegotiationFailed => StreamError::Unsupported(protocol),
+            StreamUpgradeError::Io(io) => StreamError::Io(io),
+        };
+
         // 尝试发送错误到发送者
         let _ = sender.send(Err(error));
     }
@@ -119,12 +106,16 @@ where
             return Poll::Pending;
         }
         match self.receiver.poll_next_unpin(cx) {
-            Poll::Ready(Some(NewOutboundStream {
+            Poll::Ready(Some(NewStream {
                 protocol, sender, ..
             })) => {
                 self.pending_outbound = Some((protocol.clone(), sender));
-                let upgrade = Shared::lock(&self.shared).outbound_request(protocol);
-                return Poll::Ready(upgrade);
+                return Poll::Ready(SubstreamProtocol::new(
+                    Upgrade {
+                        supported_protocols: vec![protocol],
+                    },
+                    (),
+                ));
             }
             Poll::Ready(None) => {}
             Poll::Pending => {}

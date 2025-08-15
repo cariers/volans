@@ -8,7 +8,7 @@ use std::{
 
 use futures::{FutureExt, future::BoxFuture};
 use futures_timer::Delay;
-use volans_core::{PeerId, Url, upgrade::ReadyUpgrade};
+use volans_core::{PeerId, Multiaddr, upgrade::ReadyUpgrade};
 use volans_swarm::{
     BehaviorEvent, ConnectionDenied, ConnectionHandler, ConnectionHandlerEvent, ConnectionId,
     InboundStreamHandler, InboundUpgradeSend, NetworkBehavior, NetworkIncomingBehavior,
@@ -198,8 +198,8 @@ impl NetworkIncomingBehavior for Behavior {
         &mut self,
         _id: ConnectionId,
         peer_id: PeerId,
-        _local_addr: &Url,
-        _remote_addr: &Url,
+        _local_addr: &Multiaddr,
+        _remote_addr: &Multiaddr,
     ) -> Result<Self::ConnectionHandler, ConnectionDenied> {
         tracing::trace!("Ping handler established for peer: {}", peer_id);
         Ok(Handler::new(self.config.clone()))

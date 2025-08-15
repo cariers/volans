@@ -8,7 +8,7 @@ use std::{
 };
 
 use smallvec::SmallVec;
-use volans_core::{PeerId, Url};
+use volans_core::{Multiaddr, PeerId};
 use volans_swarm::{
     BehaviorEvent, ConnectionDenied, ConnectionId, DialOpts, NetworkBehavior,
     NetworkOutgoingBehavior, THandlerAction, THandlerEvent,
@@ -196,13 +196,13 @@ where
         &mut self,
         _id: ConnectionId,
         _peer_id: PeerId,
-        _addr: &Url,
+        _addr: &Multiaddr,
     ) -> Result<Self::ConnectionHandler, ConnectionDenied> {
         let handler = handler::Handler::new(self.codec.clone(), self.config.request_timeout);
         Ok(handler)
     }
 
-    fn on_connection_established(&mut self, id: ConnectionId, peer_id: PeerId, _addr: &Url) {
+    fn on_connection_established(&mut self, id: ConnectionId, peer_id: PeerId, _addr: &Multiaddr) {
         self.clients.entry(peer_id).or_default().push(id);
     }
 
@@ -210,7 +210,7 @@ where
         &mut self,
         id: ConnectionId,
         peer_id: PeerId,
-        _addr: &Url,
+        _addr: &Multiaddr,
         _reason: Option<&ConnectionError>,
     ) {
         self.clients
@@ -231,7 +231,7 @@ where
         &mut self,
         id: ConnectionId,
         peer_id: Option<PeerId>,
-        _addr: Option<&Url>,
+        _addr: Option<&Multiaddr>,
         _error: &DialError,
     ) {
         if let Some(peer) = peer_id {

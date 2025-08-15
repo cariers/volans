@@ -8,7 +8,7 @@ use std::{
 };
 
 use smallvec::SmallVec;
-use volans_core::{PeerId, Url};
+use volans_core::{PeerId, Multiaddr};
 use volans_swarm::{
     BehaviorEvent, ConnectionDenied, ConnectionId, ListenerEvent, NetworkBehavior,
     NetworkIncomingBehavior, THandlerAction, THandlerEvent,
@@ -165,8 +165,8 @@ where
         &mut self,
         _id: ConnectionId,
         _peer_id: PeerId,
-        _local_addr: &Url,
-        _remote_addr: &Url,
+        _local_addr: &Multiaddr,
+        _remote_addr: &Multiaddr,
     ) -> Result<Self::ConnectionHandler, ConnectionDenied> {
         let handler = handler::Handler::new(
             self.codec.clone(),
@@ -181,8 +181,8 @@ where
         &mut self,
         _id: ConnectionId,
         _peer_id: PeerId,
-        _local_addr: &Url,
-        _remote_addr: &Url,
+        _local_addr: &Multiaddr,
+        _remote_addr: &Multiaddr,
     ) {
     }
 
@@ -190,8 +190,8 @@ where
         &mut self,
         _id: ConnectionId,
         _peer_id: PeerId,
-        _local_addr: &Url,
-        _remote_addr: &Url,
+        _local_addr: &Multiaddr,
+        _remote_addr: &Multiaddr,
         _reason: Option<&ConnectionError>,
     ) {
     }
@@ -201,8 +201,8 @@ where
         &mut self,
         _id: ConnectionId,
         _peer_id: Option<PeerId>,
-        _local_addr: &Url,
-        _remote_addr: &Url,
+        _local_addr: &Multiaddr,
+        _remote_addr: &Multiaddr,
         _error: &ListenError,
     ) {
     }
