@@ -1,6 +1,6 @@
 [package]
 name = "volans-plaintext"
-version = "0.1.0"
+version = "0.2.0-beta"
 rust-version.workspace = true
 edition.workspace = true
 description = "Plaintext transport for volans"
@@ -12,7 +12,6 @@ categories = ["network-programming", "asynchronous"]
 
 
 [dependencies]
-ed25519-dalek = "2.1.1"
 volans-core.workspace = true
 futures.workspace = true
 bytes.workspace = true

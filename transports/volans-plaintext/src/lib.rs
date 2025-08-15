@@ -4,23 +4,20 @@ use std::{
     task::{Context, Poll},
 };
 
-use ed25519_dalek::PUBLIC_KEY_LENGTH;
-use ed25519_dalek::{SignatureError, VerifyingKey};
 use futures::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, future::BoxFuture};
 use volans_core::{
     PeerId, UpgradeInfo,
+    identity::{PublicKey, SignatureError},
     upgrade::{InboundConnectionUpgrade, OutboundConnectionUpgrade},
 };
 
-pub use ed25519_dalek as ed25519;
-
 #[derive(Clone)]
 pub struct Config {
-    local_pubkey: VerifyingKey,
+    local_pubkey: PublicKey,
 }
 
 impl Config {
-    pub fn new(local_pubkey: VerifyingKey) -> Self {
+    pub fn new(local_pubkey: PublicKey) -> Self {
         Self { local_pubkey }
     }
 
@@ -30,9 +27,9 @@ impl Config {
     {
         socket.write_all(self.local_pubkey.as_bytes()).await?;
         socket.flush().await?;
-        let mut key_buf = [0; PUBLIC_KEY_LENGTH];
+        let mut key_buf = [0; 32];
         socket.read_exact(&mut key_buf).await?;
-        let remote_key = VerifyingKey::from_bytes(&key_buf)?;
+        let remote_key = PublicKey::from_bytes(&key_buf)?;
         let peer_id = PeerId::from_bytes(remote_key.as_bytes().clone());
         Ok((peer_id, IdentifyConnection { socket, remote_key }))
     }
@@ -78,7 +75,7 @@ where
     S: AsyncRead + AsyncWrite + Unpin,
 {
     pub socket: S,
-    pub remote_key: VerifyingKey,
+    pub remote_key: PublicKey,
 }
 
 #[derive(Debug, thiserror::Error)]
