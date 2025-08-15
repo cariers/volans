@@ -92,16 +92,21 @@ impl Transport for Config {
     fn dial(&self, addr: Multiaddr) -> Result<Self::Dial, TransportError<Self::Error>> {
         let config = self.websocket.clone();
         tracing::debug!("Connecting to WebSocket at {}", addr);
-        let (inner_addr, path) =
-            parse_ws_addr(&addr).ok_or_else(|| TransportError::NotSupported(addr.clone()))?;
+        let ws_addr =
+            parse_ws_dial_addr(&addr).map_err(|_| TransportError::NotSupported(addr.clone()))?;
 
-        let path = path.unwrap_or("".to_string());
-        let request = path.parse::<Uri>().map_err(tungstenite::Error::from)?;
+        let request = Uri::builder()
+            .scheme(if ws_addr.use_tls { "wss" } else { "ws" })
+            .authority(ws_addr.host_port.as_str())
+            .path_and_query(ws_addr.path.as_str())
+            .build()
+            .map_err(|_| TransportError::NotSupported(addr.clone()))?;
+
         tracing::debug!("Connecting to WebSocket at {}", request);
 
         let dialer = self
             .tcp
-            .dial(inner_addr)
+            .dial(ws_addr.tcp_addr)
             .map_err(|e| e.map(tungstenite::Error::from))?;
 
         Ok(dialer
@@ -116,8 +121,8 @@ impl Transport for Config {
     }
 
     fn listen(&self, addr: Multiaddr) -> Result<Self::Listener, TransportError<Self::Error>> {
-        let (inner_addr, path) =
-            parse_ws_addr(&addr).ok_or_else(|| TransportError::NotSupported(addr.clone()))?;
+        let (inner_addr, path) = parse_ws_listen_addr(&addr)
+            .ok_or_else(|| TransportError::NotSupported(addr.clone()))?;
         let listener = self
             .tcp
             .listen(inner_addr)
@@ -173,7 +178,7 @@ impl Listener for ListenStream {
     }
 }
 
-fn parse_ws_addr(addr: &Multiaddr) -> Option<(Multiaddr, Option<String>)> {
+fn parse_ws_listen_addr(addr: &Multiaddr) -> Option<(Multiaddr, Option<String>)> {
     let mut inner_addr = addr.clone();
     let maybe_path = inner_addr.pop()?;
     match maybe_path {
@@ -184,4 +189,72 @@ fn parse_ws_addr(addr: &Multiaddr) -> Option<(Multiaddr, Option<String>)> {
         Protocol::Ws => Some((inner_addr, None)),
         _ => None,
     }
+}
+
+fn parse_ws_dial_addr(addr: &Multiaddr) -> Result<WsAddress, ()> {
+    let mut protocols = addr.iter();
+    let mut ip = protocols.next();
+    let mut tcp = protocols.next();
+
+    let (host_port, server_name) = loop {
+        match (ip, tcp) {
+            (Some(Protocol::Ip4(ip)), Some(Protocol::Tcp(port))) => {
+                let host_port = format!("{}:{}", ip, port);
+                break (host_port, ip.to_string());
+            }
+            (Some(Protocol::Ip6(ip)), Some(Protocol::Tcp(port))) => {
+                break (format!("[{ip}]:{port}"), ip.to_string());
+            }
+            (Some(Protocol::Dns(h)), Some(Protocol::Tcp(port)))
+            | (Some(Protocol::Dns4(h)), Some(Protocol::Tcp(port)))
+            | (Some(Protocol::Dns6(h)), Some(Protocol::Tcp(port))) => {
+                break (format!("{h}:{port}"), h.to_string());
+            }
+            (Some(_), Some(p)) => {
+                ip = Some(p);
+                tcp = protocols.next();
+            }
+            _ => return Err(()),
+        }
+    };
+
+    let mut protocols = addr.clone();
+    let mut peer = None;
+    let mut path = "/".to_string();
+    let (use_tls, path) = loop {
+        match protocols.pop() {
+            p @ Some(Protocol::Peer(_)) => peer = p,
+            Some(Protocol::Path(x_path)) => path = x_path.to_string(),
+            Some(Protocol::Ws) => match protocols.pop() {
+                Some(Protocol::Tls) => break (true, path),
+                Some(p) => {
+                    protocols.push(p);
+                    break (false, path);
+                }
+                None => return Err(()),
+            },
+            _ => return Err(()),
+        }
+    };
+    let tcp_addr = match peer {
+        Some(p) => protocols.with(p),
+        None => protocols,
+    };
+
+    Ok(WsAddress {
+        host_port,
+        server_name,
+        path,
+        use_tls,
+        tcp_addr,
+    })
+}
+
+#[derive(Debug)]
+struct WsAddress {
+    host_port: String,
+    server_name: String,
+    path: String,
+    use_tls: bool,
+    tcp_addr: Multiaddr,
 }
