@@ -3,7 +3,7 @@ use std::pin::Pin;
 use futures::StreamExt;
 use volans::{
     Transport,
-    core::{PeerId, Url},
+    core::{Multiaddr, PeerId, identity::KeyPair},
     muxing, plaintext,
     swarm::{self, NetworkIncomingBehavior, NetworkOutgoingBehavior},
     ws,
@@ -40,13 +40,18 @@ async fn main() -> anyhow::Result<()> {
 
     tracing::info!("Starting TCP Echo Example");
 
-    let addr = Url::parse("ws://0.0.0.0:8088")?;
+    let addr = "/ip4/0.0.0.0/tcp/8088/ws".parse::<Multiaddr>()?;
 
-    let key: [u8; 32] = rand::random();
-    let local_key = plaintext::ed25519::SigningKey::from_bytes(&key);
-    let local_peer_id = PeerId::from_bytes(key);
+    let mut bytes = [0u8; 32];
+    bytes[0] = 1;
 
-    let identify_upgrade = plaintext::Config::new(local_key.verifying_key());
+    let key_pair = KeyPair::from_bytes(&bytes);
+
+    // let key: [u8; 32] = rand::random();
+    // let local_key = PublicKey::from_bytes(&key);
+    let local_peer_id = PeerId::from_public_key(&key_pair.verifying_key());
+
+    let identify_upgrade = plaintext::Config::new(key_pair.verifying_key());
 
     let muxing_upgrade = muxing::Config::new();
 
@@ -85,13 +90,18 @@ async fn main() -> anyhow::Result<()> {
 async fn start_client() -> anyhow::Result<()> {
     tracing::info!("Starting TCP Demo Client");
 
-    let addr = Url::parse("ws://0.0.0.0:8088")?;
+    let addr = "/ip4/127.0.0.1/tcp/8088/ws".parse::<Multiaddr>()?;
 
-    let key: [u8; 32] = rand::random();
-    let local_key = plaintext::ed25519::SigningKey::from_bytes(&key);
-    let local_peer_id = PeerId::from_bytes(key);
+    let mut bytes = [0u8; 32];
+    bytes[0] = 2;
 
-    let identify_upgrade = plaintext::Config::new(local_key.verifying_key());
+    let key_pair = KeyPair::from_bytes(&bytes);
+
+    // let key: [u8; 32] = rand::random();
+    // let local_key = PublicKey::from_bytes(&key);
+    let local_peer_id = PeerId::from_public_key(&key_pair.verifying_key());
+
+    let identify_upgrade = plaintext::Config::new(key_pair.verifying_key());
 
     let muxing_upgrade = muxing::Config::new();
 

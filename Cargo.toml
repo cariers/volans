@@ -25,7 +25,6 @@ members = [
 
     # examples
     "examples/ws-demo"
-
 ]
 resolver = "3"
 
@@ -43,16 +42,16 @@ tokio = { version = "1.47", default-features = false}
 
 # core
 volans-stream-select = { path = "volans-stream-select", version = "0.1.0"}
-volans-core = { path = "volans-core" , version = "0.1.0"}
-volans-swarm = { path = "volans-swarm", version = "0.1.1"}
-volans-swarm-derive = { path = "volans-swarm-derive", version = "0.1.0"}
+volans-core = { path = "volans-core" , version = "0.2.0-beta"}
+volans-swarm = { path = "volans-swarm", version = "0.2.0-beta"}
+volans-swarm-derive = { path = "volans-swarm-derive", version = "0.2.0-beta"}
 
 volans-codec = { path = "volans-codec", version = "0.1.0"}
 
 # transports
-volans-tcp = { path = "transports/volans-tcp", version = "0.1.0"}
-volans-ws = { path = "transports/volans-ws", version = "0.1.0"}
-volans-plaintext = { path = "transports/volans-plaintext", version = "0.1.0"}
+volans-tcp = { path = "transports/volans-tcp", version = "0.2.0-beta"}
+volans-ws = { path = "transports/volans-ws", version = "0.2.0-beta"}
+volans-plaintext = { path = "transports/volans-plaintext", version = "0.2.0-beta"}
 
 # muxers
 volans-muxing = { path = "muxers/volans-muxing", version = "0.1.0"}
@@ -60,10 +59,10 @@ volans-yamux = { path = "muxers/volans-yamux", version = "0.1.0"}
 
 
 # protocols
-volans-ping = { path = "protocols/volans-ping", version = "0.1.0"}
-volans-request = { path = "protocols/volans-request", version = "0.1.1"}
-volans-stream = { path = "protocols/volans-stream", version = "0.1.1-beta"}
+volans-ping = { path = "protocols/volans-ping", version = "0.2.0-beta"}
+volans-request = { path = "protocols/volans-request", version = "0.2.0-beta"}
+volans-stream = { path = "protocols/volans-stream", version = "0.2.0-beta"}
 
 
 # all
-volans = { path = "volans", version = "0.1.3-beta"}
+volans = { path = "volans", version = "0.2.0-beta"}
