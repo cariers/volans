@@ -4,7 +4,7 @@ use std::{
 };
 
 use either::Either;
-use futures::TryFuture;
+use futures::{TryFuture, future};
 
 use crate::{Listener, ListenerEvent, Multiaddr, Transport, TransportError};
 
@@ -25,7 +25,7 @@ where
     A: Transport,
     B: Transport,
 {
-    type Output = Either<A::Output, B::Output>;
+    type Output = future::Either<A::Output, B::Output>;
     type Error = Either<A::Error, B::Error>;
     type Dial = ChoiceFuture<A::Dial, B::Dial>;
     type Incoming = ChoiceFuture<A::Incoming, B::Incoming>;
@@ -86,7 +86,7 @@ where
     A: Transport,
     B: Transport,
 {
-    type Output = Either<A::Output, B::Output>;
+    type Output = future::Either<A::Output, B::Output>;
     type Error = Either<A::Error, B::Error>;
     type Upgrade = ChoiceFuture<A::Incoming, B::Incoming>;
 
@@ -126,16 +126,16 @@ where
     TFut1: TryFuture<Ok = TA, Error = EA>,
     TFut2: TryFuture<Ok = TB, Error = EB>,
 {
-    type Output = Result<Either<TA, TB>, Either<EA, EB>>;
+    type Output = Result<future::Either<TA, TB>, Either<EA, EB>>;
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let this = self.project();
         match this {
             ChoiceFutureProj::First(fut) => TryFuture::try_poll(fut, cx)
-                .map_ok(Either::Left)
+                .map_ok(future::Either::Left)
                 .map_err(Either::Left),
             ChoiceFutureProj::Second(fut) => TryFuture::try_poll(fut, cx)
-                .map_ok(Either::Right)
+                .map_ok(future::Either::Right)
                 .map_err(Either::Right),
         }
     }

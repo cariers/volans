@@ -14,6 +14,7 @@ use std::{
 pub struct DialerSelectFuture<R, I: Iterator> {
     protocols: iter::Peekable<I>,
     state: State<R, I::Item>,
+    lazy: bool,
 }
 
 impl<R, I> DialerSelectFuture<R, I>
@@ -28,6 +29,7 @@ where
             state: State::Initial {
                 io: MessageIO::new(io),
             },
+            lazy: false,
         }
     }
 }
@@ -80,11 +82,14 @@ where
                     if this.protocols.peek().is_some() {
                         // 如果还有更多协议，进入发送协议状态
                         *this.state = State::FlushProtocol { io, protocol };
-                    } else {
+                    } else if *this.lazy {
                         // 如果没有更多协议，直接进入等待状态
                         tracing::trace!("Expecting protocol: {}", p.as_ref());
                         let io = Negotiated::expecting(io.into_reader(), p);
                         return Poll::Ready(Ok((protocol, io)));
+                    } else {
+                        // 如果没有更多协议，进入等待状态
+                        *this.state = State::FlushProtocol { io, protocol };
                     }
                 }
                 State::FlushProtocol { mut io, protocol } => {

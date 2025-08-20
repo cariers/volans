@@ -1,8 +1,11 @@
 mod either;
+mod listen_addresses;
+
+pub use listen_addresses::ListenAddresses;
 
 use std::task::{Context, Poll};
 
-use volans_core::{PeerId, Multiaddr};
+use volans_core::{Multiaddr, PeerId};
 
 use crate::{
     ConnectionDenied, ConnectionHandler, ConnectionId, DialOpts, ListenerId, THandlerAction,
@@ -100,7 +103,13 @@ pub trait NetworkOutgoingBehavior: NetworkBehavior {
     ) -> Result<Self::ConnectionHandler, ConnectionDenied>;
 
     /// 连接处理器事件处理
-    fn on_connection_established(&mut self, _id: ConnectionId, _peer_id: PeerId, _addr: &Multiaddr) {}
+    fn on_connection_established(
+        &mut self,
+        _id: ConnectionId,
+        _peer_id: PeerId,
+        _addr: &Multiaddr,
+    ) {
+    }
 
     fn on_connection_closed(
         &mut self,

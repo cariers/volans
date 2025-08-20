@@ -16,6 +16,7 @@ volans-core.workspace = true
 futures.workspace = true
 socket2 = "0.5.10"
 tracing = { workspace = true }
+if-watch = {workspace = true, features = ["tokio"]}
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["net", "rt", "macros"]}

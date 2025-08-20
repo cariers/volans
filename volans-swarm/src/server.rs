@@ -391,7 +391,7 @@ where
                         remote_addr,
                     })
             }
-            transport::ListenerEvent::Listened(addr) => {
+            transport::ListenerEvent::NewAddress(addr) => {
                 tracing::debug!(listener = ?listener_id, addr = %addr, "Listener started");
                 let addresses = self.listened_addresses.entry(listener_id).or_default();
 
@@ -406,6 +406,18 @@ where
                     }));
                 self.pending_swarm_events
                     .push_back(SwarmEvent::NewListenAddr { listener_id, addr });
+            }
+            transport::ListenerEvent::AddressExpired(addr) => {
+                if let Some(addresses) = self.listened_addresses.get_mut(&listener_id) {
+                    addresses.retain(|a| a != &addr);
+                }
+                self.behavior
+                    .on_listener_event(ListenerEvent::ExpiredListenAddr(ExpiredListenAddr {
+                        listener_id,
+                        addr: &addr,
+                    }));
+                self.pending_swarm_events
+                    .push_back(SwarmEvent::ExpiredListenAddr { listener_id, addr });
             }
             transport::ListenerEvent::Closed(reason) => {
                 tracing::debug!(
@@ -536,6 +548,11 @@ pub enum SwarmEvent<TBehaviorEvent> {
     Behavior(TBehaviorEvent),
 
     NewListenAddr {
+        listener_id: ListenerId,
+        addr: Multiaddr,
+    },
+
+    ExpiredListenAddr {
         listener_id: ListenerId,
         addr: Multiaddr,
     },

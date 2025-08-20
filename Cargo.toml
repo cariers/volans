@@ -19,7 +19,7 @@ members = [
     "protocols/volans-ping",
     "protocols/volans-request",
     "protocols/volans-stream",
-
+    "protocols/volans-bridge",
     # volans
     "volans",
 
@@ -38,6 +38,8 @@ futures = "0.3.31"
 tracing = { version = "0.1" }
 bytes = "1.10.1"
 smol_str = "0.3.2"
+futures-bounded = { version = "0.3.0", features = ["futures-timer"] }
+if-watch = "3.2.1"
 tokio = { version = "1.47", default-features = false}
 
 # core
@@ -62,7 +64,7 @@ volans-yamux = { path = "muxers/volans-yamux", version = "0.1.0"}
 volans-ping = { path = "protocols/volans-ping", version = "0.2.0-beta"}
 volans-request = { path = "protocols/volans-request", version = "0.2.0-beta"}
 volans-stream = { path = "protocols/volans-stream", version = "0.2.0-beta"}
-
+volans-bridge = { path = "protocols/volans-bridge", version = "0.2.0-beta"}
 
 # all
 volans = { path = "volans", version = "0.2.0-beta"}

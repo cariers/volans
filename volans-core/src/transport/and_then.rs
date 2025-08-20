@@ -112,7 +112,8 @@ where
                 },
             },
             ListenerEvent::Closed(cause) => ListenerEvent::Closed(cause.map_err(Either::Left)),
-            ListenerEvent::Listened(addr) => ListenerEvent::Listened(addr),
+            ListenerEvent::NewAddress(addr) => ListenerEvent::NewAddress(addr),
+            ListenerEvent::AddressExpired(addr) => ListenerEvent::AddressExpired(addr),
             ListenerEvent::Error(err) => ListenerEvent::Error(Either::Left(err)),
         })
     }

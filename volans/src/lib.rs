@@ -31,3 +31,9 @@ pub use volans_ping as ping;
 
 #[cfg(feature = "request")]
 pub use volans_request as request;
+
+#[cfg(feature = "stream")]
+pub use volans_stream as stream;
+
+#[cfg(feature = "bridge")]
+pub use volans_bridge as bridge;

@@ -106,7 +106,8 @@ where
                 },
             },
             ListenerEvent::Closed(cause) => ListenerEvent::Closed(cause),
-            ListenerEvent::Listened(addr) => ListenerEvent::Listened(addr),
+            ListenerEvent::NewAddress(addr) => ListenerEvent::NewAddress(addr),
+            ListenerEvent::AddressExpired(addr) => ListenerEvent::AddressExpired(addr),
             ListenerEvent::Error(err) => ListenerEvent::Error(err),
         })
     }

@@ -13,7 +13,8 @@ pub mod server;
 pub mod upgrade;
 
 pub use behavior::{
-    BehaviorEvent, ListenerEvent, NetworkBehavior, NetworkIncomingBehavior, NetworkOutgoingBehavior,
+    BehaviorEvent, ListenAddresses, ListenerEvent, NetworkBehavior, NetworkIncomingBehavior,
+    NetworkOutgoingBehavior,
 };
 pub use connection::ConnectionId;
 pub use dial_opts::{DialOpts, PeerCondition};

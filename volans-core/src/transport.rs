@@ -120,7 +120,8 @@ pub trait Transport {
 }
 
 pub enum ListenerEvent<TUpgr, TErr> {
-    Listened(Multiaddr),
+    NewAddress(Multiaddr),
+    AddressExpired(Multiaddr),
     Incoming {
         local_addr: Multiaddr,
         remote_addr: Multiaddr,
@@ -136,7 +137,8 @@ impl<TUpgr, TErr> ListenerEvent<TUpgr, TErr> {
         F: FnOnce(TUpgr) -> TUpgr2,
     {
         match self {
-            ListenerEvent::Listened(addr) => ListenerEvent::Listened(addr),
+            ListenerEvent::NewAddress(addr) => ListenerEvent::NewAddress(addr),
+            ListenerEvent::AddressExpired(addr) => ListenerEvent::AddressExpired(addr),
             ListenerEvent::Incoming {
                 local_addr,
                 remote_addr,
@@ -156,7 +158,8 @@ impl<TUpgr, TErr> ListenerEvent<TUpgr, TErr> {
         F: FnOnce(TErr) -> TErr2,
     {
         match self {
-            ListenerEvent::Listened(addr) => ListenerEvent::Listened(addr),
+            ListenerEvent::NewAddress(addr) => ListenerEvent::NewAddress(addr),
+            ListenerEvent::AddressExpired(addr) => ListenerEvent::AddressExpired(addr),
             ListenerEvent::Incoming {
                 local_addr,
                 remote_addr,
