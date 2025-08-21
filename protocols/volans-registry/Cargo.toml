@@ -1,0 +1,16 @@
+[package]
+name = "volans-registry"
+version = "0.2.0-beta"
+rust-version.workspace = true
+edition.workspace = true
+
+[dependencies]
+async-trait = "0.1.88"
+futures = { workspace = true }
+volans-swarm.workspace = true
+volans-core.workspace = true
+mdns-sd = {version =  "0.14.0", default-features = false, features = ["async"]}
+futures-timer = "3.0.3"
+flume = "0.11.1"
+thiserror.workspace = true
+tracing.workspace = true

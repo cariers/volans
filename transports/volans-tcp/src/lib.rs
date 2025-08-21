@@ -97,6 +97,7 @@ impl Transport for Config {
     }
 
     fn listen(&self, addr: Multiaddr) -> Result<Self::Listener, TransportError<Self::Error>> {
+        tracing::debug!("Listening for TCP connections on {}", addr);
         let socket_addr = match multiaddr_to_socket_addr(addr.clone()) {
             Ok(socket) => socket,
             _ => return Err(TransportError::NotSupported(addr)),
@@ -115,9 +116,12 @@ impl Transport for Config {
                 if_watcher: Some(if_watch::tokio::IfWatcher::new()?),
             });
         }
+        let mut pending_events = VecDeque::new();
+        pending_events.push_back(ListenerEvent::NewAddress(addr.clone()));
+
         Ok(ListenStream {
             listen_addr: socket_addr,
-            pending_events: VecDeque::new(),
+            pending_events,
             state: State::Listening { listener },
             if_watcher: None,
         })

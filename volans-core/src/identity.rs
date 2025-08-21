@@ -31,6 +31,11 @@ impl PeerId {
         }
     }
 
+    pub fn try_from_base58(s: &str) -> Result<Self, Error> {
+        let bytes = bs58::decode(s).into_vec()?;
+        Self::try_from_slice(&bytes)
+    }
+
     pub fn into_bytes(&self) -> [u8; 32] {
         self.0
     }

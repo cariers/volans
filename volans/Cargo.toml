@@ -22,7 +22,7 @@ full = [
     "ping",
     "request",
     "stream",
-    "bridge",
+    "registry",
 ]
 
 swarm = ["dep:volans-swarm"]
@@ -41,7 +41,7 @@ yamux = ["dep:volans-yamux"]
 ping = ["dep:volans-ping"]
 request = ["dep:volans-request"]
 stream = ["dep:volans-stream"]
-bridge = ["dep:volans-bridge"]
+registry = ["dep:volans-registry"]
 
 [dependencies]
 volans-core.workspace = true
@@ -61,4 +61,4 @@ volans-yamux = { workspace = true, optional = true }
 volans-ping = { workspace = true, optional = true }
 volans-request = { workspace = true, optional = true }
 volans-stream = { workspace = true, optional = true }
-volans-bridge = { workspace = true, optional = true }
+volans-registry = { workspace = true, optional = true }

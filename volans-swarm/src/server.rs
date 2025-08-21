@@ -6,7 +6,11 @@ use std::{
     task::{Context, Poll},
 };
 
-use futures::{Stream, StreamExt, channel::oneshot, stream::SelectAll};
+use futures::{
+    Stream, StreamExt,
+    channel::oneshot,
+    stream::{Fuse, SelectAll},
+};
 use smallvec::SmallVec;
 use volans_core::{
     ConnectedPoint, Multiaddr, PeerId, Transport, TransportError, muxing::StreamMuxerBox, transport,
@@ -35,7 +39,7 @@ where
     pending_handler_action: Option<(PeerId, PendingNotifyHandler, THandlerAction<TBehavior>)>,
 
     /// listeners
-    listeners: SelectAll<listener::TaggedListener>,
+    listeners: SelectAll<Fuse<listener::TaggedListener>>,
     listeners_abort: HashMap<ListenerId, oneshot::Sender<Infallible>>,
     listened_addresses: HashMap<ListenerId, SmallVec<[Multiaddr; 1]>>,
 
@@ -110,7 +114,7 @@ where
                 let (close_tx, close_rx) = oneshot::channel();
                 let tagged_listener =
                     listener::TaggedListener::new(listener_id, listener, close_rx);
-                self.listeners.push(tagged_listener);
+                self.listeners.push(tagged_listener.fuse());
                 self.listeners_abort.insert(listener_id, close_tx);
             }
             Err(error) => {

@@ -19,12 +19,13 @@ members = [
     "protocols/volans-ping",
     "protocols/volans-request",
     "protocols/volans-stream",
-    "protocols/volans-bridge",
+    "protocols/volans-registry",
+
     # volans
     "volans",
 
     # examples
-    "examples/ws-demo"
+    "examples/ws-demo",
 ]
 resolver = "3"
 
@@ -64,7 +65,7 @@ volans-yamux = { path = "muxers/volans-yamux", version = "0.1.0"}
 volans-ping = { path = "protocols/volans-ping", version = "0.2.0-beta"}
 volans-request = { path = "protocols/volans-request", version = "0.2.0-beta"}
 volans-stream = { path = "protocols/volans-stream", version = "0.2.0-beta"}
-volans-bridge = { path = "protocols/volans-bridge", version = "0.2.0-beta"}
+volans-registry = { path = "protocols/volans-registry", version = "0.2.0-beta"}
 
 # all
 volans = { path = "volans", version = "0.2.0-beta"}

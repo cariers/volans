@@ -6,9 +6,9 @@ use std::{
     task::{Context, Poll},
 };
 
-use futures::{FutureExt, Stream, channel::oneshot};
+use futures::{FutureExt, Stream, channel::oneshot, stream::FusedStream};
 use volans_core::{
-    Listener, ListenerEvent, PeerId, Multiaddr, muxing::StreamMuxerBox, transport::BoxedListener,
+    Listener, ListenerEvent, Multiaddr, PeerId, muxing::StreamMuxerBox, transport::BoxedListener,
 };
 
 static NEXT_LISTENER_ID: AtomicUsize = AtomicUsize::new(1);
@@ -71,7 +71,7 @@ impl Stream for TaggedListener {
 
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         let this = self.get_mut();
-
+        // TODO 完善Closed逻辑
         loop {
             match mem::replace(&mut this.state, ListenerState::Done) {
                 ListenerState::Active {
@@ -88,11 +88,17 @@ impl Stream for TaggedListener {
                         Poll::Pending => {}
                     }
                     match Pin::new(&mut listener).poll_event(cx) {
-                        Poll::Ready(event) => {
-                            this.state = ListenerState::Active { listener, close_rx };
-                            // 监听器有新事件，返回事件
-                            return Poll::Ready(Some((this.id, event)));
-                        }
+                        Poll::Ready(event) => match event {
+                            ListenerEvent::Closed(_) => {
+                                this.state = ListenerState::Closing { listener };
+                                continue;
+                            }
+                            _ => {
+                                this.state = ListenerState::Active { listener, close_rx };
+                                // 监听器有新事件，返回事件
+                                return Poll::Ready(Some((this.id, event)));
+                            }
+                        },
                         Poll::Pending => {
                             // 监听器还没有事件，保持状态
                             this.state = ListenerState::Active { listener, close_rx };
@@ -114,6 +120,12 @@ impl Stream for TaggedListener {
             }
             return Poll::Pending;
         }
+    }
+}
+
+impl FusedStream for TaggedListener {
+    fn is_terminated(&self) -> bool {
+        matches!(self.state, ListenerState::Done)
     }
 }
 

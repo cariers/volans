@@ -144,6 +144,14 @@ pub struct ListenStream {
     inner: volans_tcp::ListenStream,
 }
 
+fn append_on_addr(mut addr: Multiaddr, path: Option<&str>) -> Multiaddr {
+    addr.push(Protocol::Ws);
+    if let Some(path) = path {
+        addr.push(Protocol::Path(path.into()));
+    }
+    addr
+}
+
 impl Listener for ListenStream {
     type Output = RwStreamSink<BytesWebSocketStream<TcpStream>>;
     type Error = tungstenite::Error;
@@ -159,22 +167,45 @@ impl Listener for ListenStream {
         cx: &mut Context<'_>,
     ) -> Poll<ListenerEvent<Self::Upgrade, Self::Error>> {
         let this = self.project();
-        match this.inner.poll_event(cx) {
-            Poll::Ready(event) => {
+
+        let inner_event = {
+            match this.inner.poll_event(cx) {
+                Poll::Ready(event) => event,
+                Poll::Pending => return Poll::Pending,
+            }
+        };
+
+        let event = match inner_event {
+            ListenerEvent::AddressExpired(addr) => {
+                ListenerEvent::AddressExpired(append_on_addr(addr, this.path.as_deref()))
+            }
+            ListenerEvent::NewAddress(multiaddr) => {
+                ListenerEvent::NewAddress(append_on_addr(multiaddr, this.path.as_deref()))
+            }
+            ListenerEvent::Incoming {
+                local_addr,
+                remote_addr,
+                upgrade,
+            } => {
                 let config = this.config.clone();
-                let event = event
-                    .map_upgrade(|u| {
-                        u.map_err(Error::from)
-                            .and_then(move |stream| accept_async_with_config(stream, Some(config)))
+                let upgrade = upgrade
+                    .map_err(Error::from)
+                    .and_then(move |stream| {
+                        accept_async_with_config(stream, Some(config))
                             .map_ok(BytesWebSocketStream::new)
                             .map_ok(RwStreamSink::new)
-                            .boxed()
                     })
-                    .map_err(Error::from);
-                Poll::Ready(event)
+                    .boxed();
+                ListenerEvent::Incoming {
+                    local_addr: append_on_addr(local_addr, this.path.as_deref()),
+                    remote_addr: append_on_addr(remote_addr, this.path.as_deref()),
+                    upgrade,
+                }
             }
-            Poll::Pending => Poll::Pending,
-        }
+            ListenerEvent::Closed(r) => ListenerEvent::Closed(r.map_err(Error::from)),
+            ListenerEvent::Error(err) => ListenerEvent::Error(err.into()),
+        };
+        Poll::Ready(event)
     }
 }
 
