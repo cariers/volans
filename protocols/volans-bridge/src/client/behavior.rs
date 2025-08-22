@@ -37,7 +37,7 @@ impl Behavior {
             pending_channels: HashMap::new(),
             dial_peers: VecDeque::new(),
             pending_events: VecDeque::new(),
-            timeout: Duration::from_secs(5), // Default timeout for outbound requests
+            timeout: Duration::from_secs(15), // Default timeout for outbound requests
         }
     }
 }

@@ -26,7 +26,7 @@ impl Handler {
         Self {
             relay_remote_addr,
             inbound_pending_circuits: FuturesSet::new(
-                || futures_bounded::Delay::futures_timer(Duration::from_secs(5)),
+                || futures_bounded::Delay::futures_timer(Duration::from_secs(15)),
                 10, // 最大并行处理数
             ),
         }

@@ -38,7 +38,7 @@ impl Handler {
             pending_streams: VecDeque::new(),
             circuits: FuturesUnordered::new(),
             outbound_circuit_requests: FuturesSet::new(
-                || futures_bounded::Delay::futures_timer(Duration::from_secs(5)),
+                || futures_bounded::Delay::futures_timer(Duration::from_secs(15)),
                 10, // 最大同时处理
             ),
         }
@@ -265,12 +265,12 @@ where
             match (src_status, dst_status) {
                 (Status::Done, Status::Done) => return Poll::Ready(Ok(())),
                 (Status::Progressed, _) | (_, Status::Progressed) => {}
-                (Status::Pending, Status::Pending) => {}
-                (Status::Pending, Status::Done) | (Status::Done, Status::Pending) => {}
+                // 如果两个流都没有数据可读，且都处于Pending状态，则退出循环
+                (Status::Pending, Status::Pending) => break,
+                (Status::Pending, Status::Done) | (Status::Done, Status::Pending) => break,
             }
-
-            return Poll::Pending;
         }
+        Poll::Pending
     }
 }
 
@@ -292,6 +292,13 @@ fn forward_data<S: AsyncBufRead + Unpin, D: AsyncWrite + Unpin>(
         ready!(Pin::new(&mut dst).poll_close(cx))?;
         return Poll::Ready(Ok(0));
     }
+
+    tracing::error!(
+        "Forwarding {} bytes: {:?}, str:{}",
+        buffer.len(),
+        buffer,
+        String::from_utf8_lossy(&buffer)
+    );
 
     let i = ready!(Pin::new(dst).poll_write(cx, buffer))?;
     if i == 0 {

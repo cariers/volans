@@ -1,6 +1,6 @@
 [package]
 name = "volans-muxing"
-version = "0.1.0"
+version = "0.1.1"
 rust-version.workspace = true
 edition.workspace = true
 description = "Muxing multiplexing protocol for volans"
@@ -13,6 +13,6 @@ categories = ["network-programming", "asynchronous"]
 
 [dependencies]
 futures = { workspace = true }
-muxing = { version = "0.2.0" }
+muxing = { version = "0.2.1" }
 volans-core.workspace = true
 tracing.workspace = true

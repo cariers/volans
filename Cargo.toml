@@ -59,7 +59,7 @@ volans-ws = { path = "transports/volans-ws", version = "0.2.0-beta"}
 volans-plaintext = { path = "transports/volans-plaintext", version = "0.2.0-beta"}
 
 # muxers
-volans-muxing = { path = "muxers/volans-muxing", version = "0.1.0"}
+volans-muxing = { path = "muxers/volans-muxing", version = "0.1.1"}
 volans-yamux = { path = "muxers/volans-yamux", version = "0.1.0"}
 
 

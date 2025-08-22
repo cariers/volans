@@ -30,7 +30,7 @@ impl Handler {
             relayed_addr,
             pending_events: VecDeque::new(),
             inbound_circuit_requests: FuturesSet::new(
-                || Delay::futures_timer(Duration::from_secs(5)),
+                || Delay::futures_timer(Duration::from_secs(15)),
                 10, // 最大同时处理
             ),
         }

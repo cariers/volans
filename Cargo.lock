@@ -913,9 +913,9 @@ checksum = "1d87ecb2933e8aeadb3e3a02b828fed80a7528047e68b4f424523a0981a3a084"
 
 [[package]]
 name = "muxing"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aa5a3a88bc4cfe32ae4ea22d8705093d3f7ebce4a9992d651c69fdcc3b81eb9f"
+checksum = "adb4aa69baf35e2330f0d8f3311b1576ca65057679fb20b92913c1b9bf2ab22a"
 dependencies = [
  "bytes",
  "futures",
@@ -1945,7 +1945,7 @@ dependencies = [
 
 [[package]]
 name = "volans-muxing"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "futures",
  "muxing",
