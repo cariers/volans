@@ -29,8 +29,13 @@ impl<M> Clone for ProtobufUviCodec<M> {
 }
 
 impl<M> ProtobufUviCodec<M> {
-    pub fn set_max_len(&mut self, val: usize) {
-        self.uvi_codec.set_max_len(val)
+    pub fn new(max_size: usize) -> Self {
+        Self::default().set_max_len(max_size)
+    }
+
+    pub fn set_max_len(mut self, val: usize) -> Self {
+        self.uvi_codec.set_max_len(val);
+        self
     }
 
     pub fn max_len(&self) -> usize {

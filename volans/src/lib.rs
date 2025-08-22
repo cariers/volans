@@ -37,3 +37,6 @@ pub use volans_stream as stream;
 
 #[cfg(feature = "registry")]
 pub use volans_registry as registry;
+
+#[cfg(feature = "bridge")]
+pub use volans_bridge as bridge;

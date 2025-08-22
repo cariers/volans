@@ -1,0 +1,20 @@
+[package]
+name = "volans-bridge"
+version = "0.2.0-beta"
+rust-version.workspace = true
+edition.workspace = true
+
+[dependencies]
+volans-swarm.workspace = true
+volans-core.workspace = true
+volans-codec.workspace = true
+futures = { workspace = true }
+either = "1.15.0"
+tracing.workspace = true
+futures-bounded.workspace = true
+futures-timer.workspace = true
+thiserror.workspace = true
+prost = "0.14.1"
+
+[build-dependencies]
+prost-build = "0.14.1"
