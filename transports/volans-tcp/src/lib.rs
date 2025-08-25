@@ -61,10 +61,14 @@ impl Config {
         if socket_addr.is_ipv6() {
             socket.set_only_v6(true)?;
         }
+
         if let Some(ttl) = self.ttl {
-            socket.set_ttl(ttl)?;
+            match socket_addr.is_ipv6() {
+                true => {}
+                false => socket.set_ttl_v4(ttl)?,
+            }
         }
-        socket.set_nodelay(self.nodelay)?;
+        socket.set_tcp_nodelay(self.nodelay)?;
         socket.set_reuse_address(true)?;
         socket.set_nonblocking(true)?;
         Ok(socket)

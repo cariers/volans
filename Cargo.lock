@@ -74,9 +74,9 @@ dependencies = [
 
 [[package]]
 name = "async-tungstenite"
-version = "0.29.1"
+version = "0.31.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef0f7efedeac57d9b26170f72965ecfd31473ca52ca7a64e925b0b6f5f079886"
+checksum = "ee88b4c88ac8c9ea446ad43498955750a4bbe64c4392f21ccfe5d952865e318f"
 dependencies = [
  "atomic-waker",
  "futures-core",
@@ -875,7 +875,7 @@ dependencies = [
  "if-addrs 0.14.0",
  "mio",
  "socket-pktinfo",
- "socket2 0.6.0",
+ "socket2",
 ]
 
 [[package]]
@@ -1514,18 +1514,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "927136cc2ae6a1b0e66ac6b1210902b75c3f726db004a73bc18686dcd0dcd22f"
 dependencies = [
  "libc",
- "socket2 0.6.0",
+ "socket2",
  "windows-sys 0.60.2",
-]
-
-[[package]]
-name = "socket2"
-version = "0.5.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e22376abed350d73dd1cd119b57ffccad95b4e585a7cda43e286245ce23c0678"
-dependencies = [
- "libc",
- "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -1720,7 +1710,7 @@ dependencies = [
  "pin-project-lite",
  "signal-hook-registry",
  "slab",
- "socket2 0.6.0",
+ "socket2",
  "tokio-macros",
  "windows-sys 0.59.0",
 ]
@@ -1799,9 +1789,9 @@ dependencies = [
 
 [[package]]
 name = "tungstenite"
-version = "0.26.2"
+version = "0.27.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4793cb5e56680ecbb1d843515b23b6de9a75eb04b66643e256a396d43be33c13"
+checksum = "eadc29d668c91fcc564941132e17b28a7ceb2f3ebf0b9dae3e03fd7a6748eb0d"
 dependencies = [
  "bytes",
  "data-encoding",
@@ -1969,7 +1959,7 @@ dependencies = [
 
 [[package]]
 name = "volans-plaintext"
-version = "0.2.0-beta"
+version = "0.2.0"
 dependencies = [
  "bytes",
  "futures",
@@ -2066,11 +2056,11 @@ dependencies = [
 
 [[package]]
 name = "volans-tcp"
-version = "0.2.0-beta"
+version = "0.2.0"
 dependencies = [
  "futures",
  "if-watch",
- "socket2 0.5.10",
+ "socket2",
  "tokio",
  "tracing",
  "volans-core",
@@ -2078,7 +2068,7 @@ dependencies = [
 
 [[package]]
 name = "volans-ws"
-version = "0.2.0-beta"
+version = "0.2.0"
 dependencies = [
  "async-tungstenite",
  "bytes",
@@ -2246,15 +2236,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "677d2418bec65e3338edb076e806bc1ec15693c5d0104683f2efe857f61056a9"
 dependencies = [
  "windows-targets 0.48.5",
-]
-
-[[package]]
-name = "windows-sys"
-version = "0.52.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "282be5f36a8ce781fad8c8ae18fa3f9beff57ec1b52cb3de0789201425d9a33d"
-dependencies = [
- "windows-targets 0.52.6",
 ]
 
 [[package]]

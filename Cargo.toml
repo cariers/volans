@@ -54,9 +54,9 @@ volans-swarm-derive = { path = "volans-swarm-derive", version = "0.2.0-beta"}
 volans-codec = { path = "volans-codec", version = "0.2.0"}
 
 # transports
-volans-tcp = { path = "transports/volans-tcp", version = "0.2.0-beta"}
-volans-ws = { path = "transports/volans-ws", version = "0.2.0-beta"}
-volans-plaintext = { path = "transports/volans-plaintext", version = "0.2.0-beta"}
+volans-tcp = { path = "transports/volans-tcp", version = "0.2.0"}
+volans-ws = { path = "transports/volans-ws", version = "0.2.0"}
+volans-plaintext = { path = "transports/volans-plaintext", version = "0.2.0"}
 
 # muxers
 volans-muxing = { path = "muxers/volans-muxing", version = "0.1.1"}

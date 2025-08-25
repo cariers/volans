@@ -1,6 +1,6 @@
 [package]
 name = "volans-tcp"
-version = "0.2.0-beta"
+version = "0.2.0"
 rust-version.workspace = true
 edition.workspace = true
 description = "TCP transport for volans"
@@ -14,7 +14,7 @@ categories = ["network-programming", "asynchronous"]
 tokio = {workspace = true, features = ["net"]}
 volans-core.workspace = true
 futures.workspace = true
-socket2 = "0.5.10"
+socket2 = "0.6.0"
 tracing = { workspace = true }
 if-watch = {workspace = true, features = ["tokio"]}
 

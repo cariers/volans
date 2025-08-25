@@ -1,6 +1,6 @@
 [package]
 name = "volans-ws"
-version = "0.2.0-beta"
+version = "0.2.0"
 rust-version.workspace = true
 edition.workspace = true
 description = "WebSocket transport for volans"
@@ -15,7 +15,7 @@ categories = ["network-programming", "asynchronous"]
 tokio = {workspace = true}
 volans-core.workspace = true
 futures.workspace = true
-async-tungstenite = "0.29.1"
+async-tungstenite = "0.31.0"
 bytes.workspace = true
 tracing.workspace = true
 volans-tcp.workspace = true

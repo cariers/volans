@@ -1,6 +1,6 @@
 [package]
 name = "volans-plaintext"
-version = "0.2.0-beta"
+version = "0.2.0"
 rust-version.workspace = true
 edition.workspace = true
 description = "Plaintext transport for volans"
