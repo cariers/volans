@@ -46,7 +46,7 @@ if-watch = "3.2.1"
 tokio = { version = "1.47", default-features = false}
 
 # core
-volans-stream-select = { path = "volans-stream-select", version = "0.1.0"}
+volans-stream-select = { path = "volans-stream-select", version = "0.1.1"}
 volans-core = { path = "volans-core" , version = "0.2.0-beta"}
 volans-swarm = { path = "volans-swarm", version = "0.2.0-beta"}
 volans-swarm-derive = { path = "volans-swarm-derive", version = "0.2.0-beta"}
