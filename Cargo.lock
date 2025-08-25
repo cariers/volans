@@ -1922,7 +1922,7 @@ dependencies = [
 
 [[package]]
 name = "volans-core"
-version = "0.2.0-beta"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "bs58",

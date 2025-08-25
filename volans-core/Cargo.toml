@@ -1,6 +1,6 @@
 [package]
 name = "volans-core"
-version = "0.2.0-beta"
+version = "0.2.0"
 edition = "2024"
 description = "Core trait and struct for Volans networking framework"
 authors = ["Cariers Kim <cariers.kim@gmail.com>"]
