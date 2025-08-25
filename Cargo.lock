@@ -1945,7 +1945,7 @@ dependencies = [
 
 [[package]]
 name = "volans-ping"
-version = "0.2.0-beta"
+version = "0.2.0"
 dependencies = [
  "either",
  "futures",
