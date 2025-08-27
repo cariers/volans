@@ -16,23 +16,16 @@ use futures::{
 };
 use tracing::Instrument;
 use volans_core::{
-    ConnectedPoint, PeerId, Multiaddr,
+    ConnectedPoint, Multiaddr, PeerId,
     muxing::{StreamMuxerBox, StreamMuxerExt},
 };
 
 use crate::{
-    ConnectionHandler, ConnectionId, Executor, InboundStreamHandler, OutboundStreamHandler,
+    ConnectionHandler, ConnectionId, ExecSwitch, Executor, InboundStreamHandler,
+    OutboundStreamHandler,
     connection::{InboundConnection, OutboundConnection},
     error::{ConnectionError, PendingConnectionError},
 };
-
-struct ExecSwitch(Box<dyn Executor + Send>);
-
-impl ExecSwitch {
-    fn spawn(&mut self, task: impl Future<Output = ()> + Send + 'static) {
-        self.0.exec(task.boxed());
-    }
-}
 
 /// 连接池
 /// 管理连接的建立、维护和事件处理
@@ -96,7 +89,7 @@ where
             pending_peer_connections: FnvHashMap::default(),
             established: FnvHashMap::default(),
             established_peer_connections: FnvHashMap::default(),
-            executor: ExecSwitch(config.executor),
+            executor: ExecSwitch::new(config.executor),
             pending_connection_events_tx,
             pending_connection_events_rx,
             no_established_connections_waker: None,

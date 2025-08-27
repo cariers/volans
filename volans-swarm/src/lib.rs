@@ -19,7 +19,7 @@ pub use behavior::{
 pub use connection::ConnectionId;
 pub use dial_opts::{DialOpts, PeerCondition};
 pub use error::ConnectionDenied;
-pub use executor::Executor;
+pub use executor::{ExecSwitch, Executor};
 pub use handler::{
     ConnectionHandler, ConnectionHandlerEvent, InboundStreamHandler, OutboundStreamHandler,
     StreamUpgradeError, SubstreamProtocol,
